@@ -1,0 +1,14 @@
+{
+  "name": "smarthire",
+  "version": "1.0.0",
+  "description": "SmartHire – AI-Powered Intelligent Job Matching and Recruitment Portal",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node -e \"const fs=require('fs'); if(!fs.existsSync('dist')) fs.mkdirSync('dist'); ['data-mock.js','ai-engine.js','app.js','styles.css'].forEach(f=>{if(fs.existsSync(f)) fs.copyFileSync(f,'dist/'+f);}); console.log('✅ All production assets successfully packaged into dist!');\"",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

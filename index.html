@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerPilot – Autonomous AI Multi-Agent Job Matching & Career Ecosystem</title>
+  
+  <!-- Primary SEO Meta Tags for Google Search Indexing -->
+  <meta name="title" content="CareerPilot – Autonomous AI Multi-Agent Job Matching & Career Ecosystem">
+  <meta name="description" content="CareerPilot is an autonomous AI hiring portal. Upload your resume to calculate weighted ATS match %, generate a 14-day career roadmap, and practice with live AI mock interviewers.">
+  <meta name="keywords" content="CareerPilot, AI Job Search, AI Resume Parser, AI Interviewer Agent, LangGraph CareerPilot, ATS Resume Score, Tech Jobs India, Software Engineer Hiring">
+  <meta name="author" content="Satyaprakash Prajapati">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook / LinkedIn Social Cards -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://careerpilot.ai/">
+  <meta property="og:title" content="CareerPilot – Autonomous AI Hiring & Career Ecosystem">
+  <meta property="og:description" content="Match your skills with top tech jobs, take AI mock interviews with instant STAR scoring, and get hired faster.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&auto=format&fit=crop&q=80">
+
+  <!-- Google Structured Data (Schema.org JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CareerPilot",
+    "url": "https://careerpilot.ai",
+    "applicationCategory": "BusinessApplication",
+    "description": "Autonomous AI Multi-Agent Career and Hiring Platform.",
+    "operatingSystem": "All",
+    "author": {
+      "@type": "Person",
+      "name": "Satyaprakash Prajapati"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ==========================================
+       1. SPLASH SCREEN OVERLAY
+       ========================================== -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-logo">
+      <div class="logo-icon-large" style="background: linear-gradient(135deg, #7c3aed, #4f46e5);">🚀</div>
+      <h2>CareerPilot</h2>
+      <p>Autonomous AI Multi-Agent Career & Hiring Ecosystem</p>
+    </div>
+    <div class="splash-spinner"></div>
+  </div>
+
+  <script>
+    // Failsafe instant splash screen dismiss
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const s = document.getElementById('splashScreen');
+        if (s) { s.classList.add('fade-out'); setTimeout(() => { s.style.display = 'none'; }, 200); }
+      }, 150);
+    });
+  </script>
+
+  <div class="app-container">
+    
+    <!-- ==========================================
+         GLOBAL HEADER & NAVIGATION
+         ========================================== -->
+    <header>
+      <div class="header-inner">
+        <div class="logo" id="headerLogo">
+          <div class="logo-icon" style="background: linear-gradient(135deg, #7c3aed, #4f46e5);">🚀</div>
+          <span>CareerPilot</span>
+        </div>
+        
+        <!-- Navigation Links (Dynamic based on active view) -->
+        <nav class="nav-links" id="mainNavLinks">
+          <div class="nav-item active" id="navHome">Home</div>
+          <div class="nav-item seeker-only" id="navCareerPilot" style="display: none; color: var(--primary); font-weight: 700;">🚀 AI CareerPilot</div>
+          <div class="nav-item seeker-only" id="navJobs" style="display: none;">Find Jobs</div>
+          <div class="nav-item seeker-only" id="navApplications" style="display: none;">My Applications</div>
+          <div class="nav-item seeker-only" id="navCareerTools" style="display: none;">Career Tools</div>
+          <div class="nav-item recruiter-only" id="navRecruiterJobs" style="display: none;">Active Jobs</div>
+          <div class="nav-item recruiter-only" id="navRecruiterScreen" style="display: none;">Screening Desk</div>
+          <div class="nav-item recruiter-only" id="navRecruiterCalendar" style="display: none;">Calendar</div>
+          <div class="nav-item" id="navPricing">Pricing</div>
+          <div class="nav-item" id="navFeedback" style="color: var(--primary); font-weight: 700; cursor: pointer;">💬 Feedback</div>
+          <div class="nav-item" id="navTestMode" style="background: rgba(245, 158, 11, 0.12); color: var(--warning); font-weight: 800; border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 20px;">🧪 Testing Mode</div>
+        </nav>
+        
+        <div class="header-actions">
+          <!-- Role Selector -->
+          <div class="role-switcher" id="headerRoleSwitcher">
+            <button class="role-btn active" id="roleSeekerBtn">Job Seeker</button>
+            <button class="role-btn" id="roleRecruiterBtn">Recruiter</button>
+          </div>
+          
+          <!-- Alerts Bell & Dropdown Wrapper -->
+          <div style="position: relative;">
+            <div class="notification-bell" id="notificationBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+              <div class="notification-badge" id="notificationBadge" style="display: none;"></div>
+            </div>
+            
+            <!-- Real Notification Dropdown Panel -->
+            <div class="notification-dropdown" id="notificationDropdown" style="display: none; position: absolute; top: 48px; right: 0; width: 340px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden;">
+              <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-primary);">
+                <span style="font-weight: 700; font-size: 13px;">Notifications</span>
+                <span id="markAllReadBtn" style="font-size: 11px; font-weight: 600; color: var(--primary); cursor: pointer;">Mark all read</span>
+              </div>
+              <div id="notificationListContainer" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column;">
+                <!-- Real notification list elements will render here -->
+              </div>
+              <div style="padding: 10px; border-top: 1px solid var(--border-color); text-align: center; background-color: var(--bg-primary);">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">End of alerts feed</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Profile / Authentication buttons -->
+          <div class="user-profile-menu" id="authMenuBtn" style="position: relative;">
+            <div class="avatar" id="avatarBadge">U</div>
+            <span class="username" id="usernameDisplay">Sign In</span>
+            
+            <!-- Profile Dropdown Menu (Screen 25 / Profile Access) -->
+            <div class="profile-dropdown" id="profileDropdown" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; width: 220px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 1000; padding: 6px 0; text-align: left;">
+              <div style="padding: 10px 16px; border-bottom: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted); font-weight: 500; line-height: 1.4;">
+                Logged in as: <strong id="dropdownUserEmail" style="display: block; color: var(--text-main); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;">user@example.com</strong>
+              </div>
+              <div style="display: flex; flex-direction: column;">
+                <div class="dropdown-item-btn" id="dropdownGoProfile" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: 12px; color: var(--text-main); font-weight: 600; cursor: pointer; transition: var(--transition-fast);">
+                  <span>👤</span> My Profile & Resume
+                </div>
+                <div class="dropdown-item-btn" id="dropdownGoSettings" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: 12px; color: var(--text-main); font-weight: 600; cursor: pointer; transition: var(--transition-fast);">
+                  <span>⚙️</span> Settings & Preferences
+                </div>
+                <div style="border-top: 1px solid var(--border-color); margin: 6px 0;"></div>
+                <div class="dropdown-item-btn" id="dropdownSignOut" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; font-size: 12px; color: var(--danger); font-weight: 600; cursor: pointer; transition: var(--transition-fast);">
+                  <span>🚪</span> Sign Out
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==========================================
+         PUBLIC LANDING PAGE (HOME)
+         ========================================== -->
+    <main class="landing-view" id="landingView">
+      <section class="hero-section">
+        <div class="hero-tagline">AI-POWERED RECRUITMENT</div>
+        <h1 class="hero-title">Find your dream job 10x faster with AI Job Matching</h1>
+        <p class="hero-desc">Upload your resume to instantly match with top companies, get automatic applications submitted, and track your interviews in one dashboard.</p>
+        
+        <div class="search-landing-container">
+          <input type="text" placeholder="Enter target job title, e.g. Frontend Developer" id="landingSearchInput">
+          <button id="landingSearchBtn">Search Jobs</button>
+        </div>
+        
+        <!-- Role Gateways -->
+        <div class="gateways-grid">
+          <!-- Job Seeker Entrance -->
+          <div class="gateway-card" id="gatewaySeeker">
+            <div>
+              <div class="gateway-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+              <h3 class="gateway-title">For Job Seekers</h3>
+              <p class="gateway-desc">Upload resume, view matching scores, configure auto-apply, and prepare with mock AI interviews.</p>
+            </div>
+            <div class="gateway-btn">
+              Get Matched
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </div>
+          
+          <!-- Recruiter Entrance -->
+          <div class="gateway-card recruiter" id="gatewayRecruiter">
+            <div>
+              <div class="gateway-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+              </div>
+              <h3 class="gateway-title">For Employers</h3>
+              <p class="gateway-desc">Post job requirements, view ranked candidates sorted by matching scores, and schedule interviews.</p>
+            </div>
+            <div class="gateway-btn">
+              Hire Talents
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Metrics Section -->
+        <div class="metrics-section">
+          <div class="metric-card">
+            <div class="metric-val" id="metricJobsCount">142+</div>
+            <div class="metric-lbl">Active Jobs</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">94%</div>
+            <div class="metric-lbl">Matching Accuracy</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val" id="metricAppsCount">12,500+</div>
+            <div class="metric-lbl">Applications Submitted</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-val">4.8 Days</div>
+            <div class="metric-lbl">Avg. Time to Hire</div>
+          </div>
+        </div>
+
+
+      </section>
+    </main>
+
+    <!-- ==========================================
+         JOB SEEKER DASHBOARD PORTAL
+         ========================================== -->
+    <div class="dashboard-container" id="seekerDashboard">
+      <div class="dashboard-header">
+        <div class="dashboard-title-area">
+          <h1 id="seekerWelcomeName">Hello, Welcome back!</h1>
+          <p>Manage your profile, browse personalized matches, and track application pipelines.</p>
+        </div>
+        <button class="btn-primary" id="seekerQuickUploadBtn">Upload New Resume</button>
+      </div>
+      
+      <!-- Sub-Tab Navigation -->
+      <div class="tab-navigation">
+        <div class="tab-nav-item" data-target="seekerCareerPilotTab" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(99, 102, 241, 0.12)); color: var(--primary); font-weight: 800; border: 1px solid rgba(124, 58, 237, 0.35);">🚀 AI CareerPilot</div>
+        <div class="tab-nav-item active" data-target="seekerProfileTab">My Profile & Resume</div>
+        <div class="tab-nav-item" data-target="seekerJobsTab">Search & AI Matches</div>
+        <div class="tab-nav-item" data-target="seekerSavedJobsTab">Saved Jobs</div>
+        <div class="tab-nav-item" data-target="seekerPipelineTab">Applications Pipeline</div>
+        <div class="tab-nav-item" data-target="seekerInterviewsTab">Interviews</div>
+        <div class="tab-nav-item" data-target="seekerToolsTab">AI Career Tools</div>
+        <div class="tab-nav-item" data-target="seekerSettingsTab">Profile Settings</div>
+        <div class="tab-nav-item" data-target="seekerMessagesTab">Messages</div>
+      </div>
+      
+      <!-- Seeker Sub-Tab Contents -->
+      
+      <!-- 1. Profile / Parser Tab -->
+      <div class="tab-content active" id="seekerProfileTab">
+        <div class="profile-tab-grid">
+          
+          <div class="profile-card-col">
+            <!-- Resume Uploader Widget -->
+            <div class="card-widget">
+              <h3 class="card-widget-title">AI Resume Parser</h3>
+              <div class="upload-area" id="resumeDropZone">
+                <div class="upload-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div class="upload-text">Upload Resume (PDF, DOCX)</div>
+                <div class="upload-subtext">Drag & drop your file here to auto-fill details</div>
+                <input type="file" class="hidden-file-input" id="resumeFileInput" accept=".pdf,.doc,.docx,.txt">
+              </div>
+              
+              <div class="resume-paste-area">
+                <label style="font-size: 12px; font-weight: 600;">Or Paste Resume Text Below:</label>
+                <textarea id="resumePasteInput" placeholder="Paste your resume content, experience, skills, and summary here..."></textarea>
+                <button class="btn-secondary" id="parseResumeBtn" style="width: 100%; margin-top: 8px;">Parse Resume with AI</button>
+              </div>
+            </div>
+            
+            <!-- Pro Badge Promo -->
+            <div class="card-widget" style="background-color: var(--primary-light); border-color: hsl(220, 90%, 90%); text-align: center;">
+              <h4 style="color: var(--primary); font-size: 16px; margin-bottom: 8px; font-weight: 800;">Go Premium Pro</h4>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">Get highlighted recruiter profile tags, unlimited AI mock interviews, and advanced auto-apply settings.</p>
+              <button class="btn-primary" id="goProBtn" style="font-size: 12px; padding: 8px 16px;">View Pro Plans</button>
+            </div>
+          </div>
+          
+          <div class="profile-card-col">
+            <!-- Edit Profile Details Form -->
+            <div class="card-widget">
+              <h3 class="card-widget-title">Parsed Professional Profile</h3>
+              <form id="profileEditForm" class="auth-form" style="padding: 0; gap: 16px;">
+                <!-- Step Indicators (Screen 6) -->
+                <div class="wizard-steps-header" style="display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                  <div class="wizard-step active" id="stepIndicator1" style="font-weight: 700; font-size: 11px; display: flex; align-items: center; gap: 6px; color: var(--primary);"><span style="width: 16px; height: 16px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">1</span> Basic Info</div>
+                  <div class="wizard-step" id="stepIndicator2" style="font-weight: 600; font-size: 11px; display: flex; align-items: center; gap: 6px; color: var(--text-light);"><span style="width: 16px; height: 16px; border-radius: 50%; background: var(--border-color); color: var(--text-light); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">2</span> Education</div>
+                  <div class="wizard-step" id="stepIndicator3" style="font-weight: 600; font-size: 11px; display: flex; align-items: center; gap: 6px; color: var(--text-light);"><span style="width: 16px; height: 16px; border-radius: 50%; background: var(--border-color); color: var(--text-light); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">3</span> Skills</div>
+                  <div class="wizard-step" id="stepIndicator4" style="font-weight: 600; font-size: 11px; display: flex; align-items: center; gap: 6px; color: var(--text-light);"><span style="width: 16px; height: 16px; border-radius: 50%; background: var(--border-color); color: var(--text-light); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800;">4</span> Experience</div>
+                </div>
+
+                <!-- Wizard Panel 1: Basic Info -->
+                <div class="wizard-panel" id="wizardPanel1" style="display: flex; flex-direction: column; gap: 14px;">
+                  <div class="form-group">
+                    <label for="profileFullName">Full Name</label>
+                    <input type="text" id="profileFullName" placeholder="e.g. Alex Carter">
+                  </div>
+                  <div class="form-group">
+                    <label for="profileTitle">Job Title / Role</label>
+                    <input type="text" id="profileTitle" placeholder="e.g. Frontend Engineer">
+                  </div>
+                  <div class="form-group">
+                    <label for="profileLocation">Preferred Location</label>
+                    <input type="text" id="profileLocation" placeholder="e.g. San Francisco / Remote">
+                  </div>
+                </div>
+
+                <!-- Wizard Panel 2: Education -->
+                <div class="wizard-panel" id="wizardPanel2" style="display: none; flex-direction: column; gap: 14px;">
+                  <div class="form-group">
+                    <label for="profileEducation">Education Qualification</label>
+                    <input type="text" id="profileEducation" placeholder="e.g. B.S. in Computer Science, Stanford University">
+                  </div>
+                  <div class="form-group">
+                    <label for="profileGradYear">Graduation Year</label>
+                    <input type="text" id="profileGradYear" placeholder="e.g. 2024" value="2024">
+                  </div>
+                </div>
+
+                <!-- Wizard Panel 3: Skills -->
+                <div class="wizard-panel" id="wizardPanel3" style="display: none; flex-direction: column; gap: 14px;">
+                  <div class="form-group">
+                    <label for="profileSkills">Skills (comma separated)</label>
+                    <input type="text" id="profileSkills" placeholder="e.g. HTML, CSS, JavaScript, React, Git">
+                    <div class="skills-tags" id="parsedSkillsTagsContainer" style="margin-top: 10px;">
+                      <!-- Dynamic tag nodes will render here -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Wizard Panel 4: Experience -->
+                <div class="wizard-panel" id="wizardPanel4" style="display: none; flex-direction: column; gap: 14px;">
+                  <div class="form-group">
+                    <label for="profileExperience">Years of Experience</label>
+                    <input type="number" id="profileExperience" min="0" placeholder="e.g. 3">
+                  </div>
+                  <div class="form-group">
+                    <label for="profilePrevCompany">Last Employer</label>
+                    <input type="text" id="profilePrevCompany" placeholder="e.g. Stripe" value="Stripe">
+                  </div>
+                </div>
+
+                <!-- Navigation buttons for setup wizard -->
+                <div style="display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                  <button type="button" class="btn-secondary" id="wizardBackBtn" style="flex: 1; display: none;">Back</button>
+                  <button type="button" class="btn-primary" id="wizardNextBtn" style="flex: 2;">Next</button>
+                  <button type="submit" class="btn-primary" id="wizardSubmitBtn" style="flex: 2; display: none;">Complete Setup</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- 2. Job Board & Matching Tab -->
+      <div class="tab-content" id="seekerJobsTab">
+        <!-- Auto Apply configuration bar -->
+        <div class="auto-apply-panel">
+          <div class="auto-apply-text">
+            <h4>⚡ Smart Auto-Apply Engine</h4>
+            <p>Automatically apply to jobs that match your profile score above your set threshold.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-muted)">Min Match Score:</span>
+              <input type="range" id="autoApplyThresholdSlider" min="50" max="95" value="80" style="width: 100px; cursor: pointer;">
+              <span id="autoApplyThresholdVal" style="font-size: 13px; font-weight: 700; color: var(--primary)">80%</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="autoApplyToggleSwitch">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="job-board-layout">
+          
+          <div class="job-board-left">
+            <div class="job-search-box">
+              <input type="text" id="jobSearchInput" placeholder="Filter jobs by title, skills or location...">
+              <select id="jobLocationFilter" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px;">
+                <option value="all">All Locations</option>
+                <option value="remote">Remote</option>
+                <option value="on-site">On-Site</option>
+              </select>
+            </div>
+            
+            <div class="jobs-list" id="seekerJobsListContainer">
+              <!-- Dynamically populated list of job matches -->
+            </div>
+          </div>
+          
+          <div class="job-board-right">
+            <div class="job-detail-panel" id="seekerJobDetailsPanel">
+              <!-- Dynamically populated job details -->
+              <div style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <p>Select a job from the list to view specifications and matching breakdowns.</p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- 2.5. Saved Jobs Tab (Screen 16) -->
+      <div class="tab-content" id="seekerSavedJobsTab">
+        <h3 class="card-widget-title" style="margin-bottom: 16px;">💾 Bookmarked Jobs</h3>
+        <div id="savedJobsListContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+          <!-- Dynamically populated card nodes -->
+          <div style="text-align: center; padding: 40px 10px; color: var(--text-muted); grid-column: 1 / -1;">
+            No saved jobs yet. Click "Save / Bookmark" on any job listing to store it here.
+          </div>
+        </div>
+      </div>
+      
+      <!-- 2.6. Profile Settings Tab (Screen 25) -->
+      <div class="tab-content" id="seekerSettingsTab">
+        <div class="profile-tab-grid" style="grid-template-columns: 1fr 1.5fr;">
+          <!-- Avatar Panel -->
+          <div class="card-widget" style="text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;">
+            <div id="settingsAvatarContainer" style="width: 100px; height: 100px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 800; border: 4px solid var(--border-color);">
+              U
+            </div>
+            <div>
+              <h4 id="settingsProfileName" style="font-weight: 800; font-size: 16px; margin-bottom: 4px; color: var(--text-main);">User Name</h4>
+              <p id="settingsProfileEmail" style="font-size: 12px; color: var(--text-muted);">user@example.com</p>
+            </div>
+            <button class="btn-secondary" style="font-size: 11px; padding: 6px 12px;" onclick="const newName = prompt('Enter new full name:'); if(newName){ document.getElementById('settingsProfileName').textContent=newName; state.currentUser.name=newName; saveStateToStorage(); renderAll(); }">Change Profile Avatar</button>
+          </div>
+          
+          <!-- Preferences Form -->
+          <div class="card-widget">
+            <h3 class="card-widget-title" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Preference Control Panels</h3>
+            
+            <form id="settingsPrefsForm" class="auth-form" style="padding: 0; gap: 16px;">
+              <!-- Dark Theme Switcher (Screen 25) -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div>
+                  <h4 style="font-weight: 700; font-size: 13px; color: var(--text-main); margin-bottom: 2px;">Dark Theme Layout</h4>
+                  <p style="font-size: 11px; color: var(--text-muted);">Toggle between light mode and dark mode layout designs.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="settingsDarkModeToggle">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              
+              <!-- Email Notifications Toggle -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div>
+                  <h4 style="font-weight: 700; font-size: 13px; color: var(--text-main); margin-bottom: 2px;">Job Recommendations Alerts</h4>
+                  <p style="font-size: 11px; color: var(--text-muted);">Receive dynamic notifications whenever auto-apply submits resume.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="settingsAlertsToggle" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <!-- Password Reset (Screen 25) -->
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+                <h4 style="font-weight: 700; font-size: 13px; color: var(--text-main);">Change Account Password</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <input type="password" placeholder="New Password" id="settingsNewPwd" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 13px;">
+                  <input type="password" placeholder="Confirm Password" id="settingsConfirmPwd" style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 13px;">
+                </div>
+                <button type="button" class="btn-primary" style="align-self: flex-start; font-size: 11px; padding: 6px 12px; margin-top: 6px;" onclick="const pwd=document.getElementById('settingsNewPwd').value; const cpwd=document.getElementById('settingsConfirmPwd').value; if(!pwd) { alert('Password field empty'); return; } if(pwd !== cpwd){ alert('Passwords do not match'); } else { alert('Password changed successfully!'); document.getElementById('settingsNewPwd').value=''; document.getElementById('settingsConfirmPwd').value=''; }">Update Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 3. Kanban & Grid Pipeline Tab -->
+      <div class="tab-content" id="seekerPipelineTab">
+        <!-- Top Switcher & Stats (JOBinex Style) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+          <!-- Left: View Toggle Switchers -->
+          <div style="display: flex; gap: 8px;">
+            <button class="role-btn active" id="toggleViewKanbanBtn" style="font-size: 12px; padding: 6px 12px;">📊 Kanban Board</button>
+            <button class="role-btn" id="toggleViewGridBtn" style="font-size: 12px; padding: 6px 12px;">📋 Grid Card List</button>
+          </div>
+          
+          <!-- Right: Grid View Filter Pills -->
+          <div id="gridFilterPills" style="display: none; gap: 6px; flex-wrap: wrap;">
+            <span class="badge select-pill active" data-filter="all" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">All Applications</span>
+            <span class="badge select-pill" data-filter="applied" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Applied</span>
+            <span class="badge select-pill" data-filter="review" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Screening</span>
+            <span class="badge select-pill" data-filter="interview" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Interviewing</span>
+            <span class="badge select-pill" data-filter="offer" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Offers</span>
+            <span class="badge select-pill" data-filter="rejected" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Rejected</span>
+          </div>
+        </div>
+        
+        <!-- Application Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div class="card-widget" style="padding: 12px; border-left: 4px solid var(--primary); text-align: center;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="summaryCountApplied">0</div>
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Submissions</div>
+          </div>
+          <div class="card-widget" style="padding: 12px; border-left: 4px solid hsl(35, 100%, 55%); text-align: center;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="summaryCountReview">0</div>
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">In Screening</div>
+          </div>
+          <div class="card-widget" style="padding: 12px; border-left: 4px solid var(--primary); text-align: center;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="summaryCountInterview">0</div>
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Interviewing</div>
+          </div>
+          <div class="card-widget" style="padding: 12px; border-left: 4px solid var(--success); text-align: center;">
+            <div style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="summaryCountOffer">0</div>
+            <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Offers Extended</div>
+          </div>
+        </div>
+
+        <!-- Mode A: Kanban Board -->
+        <div class="kanban-board" id="applicationsKanbanBoard">
+          <!-- Column 1: Applied -->
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title">Applied</span>
+              <span class="kanban-col-count" id="kanbanCountApplied">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanbanColApplied">
+              <!-- Cards here -->
+            </div>
+          </div>
+          
+          <!-- Column 2: Reviewing -->
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title">Under Review</span>
+              <span class="kanban-col-count" id="kanbanCountReview">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanbanColReview">
+              <!-- Cards here -->
+            </div>
+          </div>
+          
+          <!-- Column 3: Interview Scheduled -->
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title">Interviewing</span>
+              <span class="kanban-col-count" id="kanbanCountInterview">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanbanColInterview">
+              <!-- Cards here -->
+            </div>
+          </div>
+          
+          <!-- Column 4: Offers / Hired -->
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title">Offers / Hired</span>
+              <span class="kanban-col-count" id="kanbanCountOffer">0</span>
+            </div>
+            <div class="kanban-cards-container" id="kanbanColOffer">
+              <!-- Cards here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode B: Grid Cards List View -->
+        <div id="applicationsGridList" style="display: none; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+          <!-- Populated dynamically with grid cards layout -->
+        </div>
+      </div>
+      
+      <!-- 3.5. Interviews Tab (Screen 19) -->
+      <div class="tab-content" id="seekerInterviewsTab">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
+          <h3 class="card-widget-title" style="margin: 0;">📅 My Scheduled Interviews</h3>
+          <!-- Tabs Switcher for Upcoming vs Completed -->
+          <div style="display: flex; gap: 8px;">
+            <button class="role-btn active" id="toggleInterviewsUpcomingBtn" style="font-size: 11px; padding: 4px 10px;">Upcoming Interviews</button>
+            <button class="role-btn" id="toggleInterviewsCompletedBtn" style="font-size: 11px; padding: 4px 10px;">Completed</button>
+          </div>
+        </div>
+        
+        <div id="interviewsListContainer" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- Dynamically populated list of scheduled interview slots -->
+          <div style="text-align: center; padding: 40px 10px; color: var(--text-muted);">
+            No upcoming interviews scheduled. Apply to more jobs to schedule recruiter feedback channels.
+          </div>
+        </div>
+      </div>
+      
+      <!-- 4. Career Tools Tab -->
+      <div class="tab-content" id="seekerToolsTab">
+        <div class="career-tools-grid">
+          
+          <!-- Tool 1: AI Mock Interview -->
+          <div class="career-tool-card">
+            <div class="career-tool-header">
+              <div class="career-tool-icon">🤖</div>
+              <div>
+                <h4 class="career-tool-title">AI Mock Interview Simulator</h4>
+                <p style="font-size: 12px; color: var(--text-muted)">Select a role and practice interview questions with instant feedback.</p>
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <select id="mockInterviewRoleSelect" style="flex: 1; padding: 6px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); font-size: 13px;">
+                <option value="Frontend Developer">Frontend Developer</option>
+                <option value="Backend Architect">Backend Architect</option>
+                <option value="Product Manager">Product Manager</option>
+                <option value="Data Scientist">Data Scientist</option>
+              </select>
+              <button class="btn-primary" id="startMockInterviewBtn" style="font-size: 12px; padding: 6px 12px;">Start Chat</button>
+            </div>
+            
+            <div class="chat-window">
+              <div class="chat-history" id="mockInterviewChatHistory">
+                <div class="chat-bubble bot">Hello! Click "Start Chat" to begin a simulated AI mock interview for your desired role. I'll evaluate your responses.</div>
+              </div>
+              <div class="chat-input-area">
+                <input type="text" id="mockInterviewUserInput" placeholder="Type your answer here..." disabled>
+                <button id="sendMockAnswerBtn" disabled>Send</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tool 2: Resume Quality Checklist & Score -->
+          <div class="career-tool-card">
+            <div class="career-tool-header">
+              <div class="career-tool-icon">📝</div>
+              <div>
+                <h4 class="career-tool-title">Resume Scorecard & Checklist</h4>
+                <p style="font-size: 12px; color: var(--text-muted)">Check structural quality, contact parameters, and keyword density.</p>
+              </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-primary); padding: 12px; border-radius: var(--border-radius-sm); margin-bottom: 16px;">
+              <span style="font-weight: 700; font-size: 14px;">Overall Resume Health:</span>
+              <span id="resumeHealthScoreBadge" style="font-size: 20px; font-weight: 800; color: var(--primary);">0 / 100</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;" id="resumeChecklistContainer">
+              <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span>Full Name Detected</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span>Contact Details (Email/Phone) parsed</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span>Work Experience records found</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span>Skills tags are set</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; color: var(--text-light)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span>Sufficient word count / details (> 100 words)</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tool 3: Salary Estimator -->
+          <div class="career-tool-card">
+            <div class="career-tool-header">
+              <div class="career-tool-icon">💰</div>
+              <div>
+                <h4 class="career-tool-title">Market Salary Estimator</h4>
+                <p style="font-size: 12px; color: var(--text-muted)">Estimate standard salary packaging based on industry role parameters.</p>
+              </div>
+            </div>
+            
+            <div class="salary-estimator-panel">
+              <div class="slider-container">
+                <label for="salaryExpSlider" style="font-size: 12px; font-weight: 600;">Years of Experience:</label>
+                <input type="range" id="salaryExpSlider" min="0" max="15" value="3" style="cursor: pointer;">
+                <span id="salaryExpVal" style="font-size: 13px; font-weight: 700;">3 Years</span>
+              </div>
+              
+              <div class="form-group">
+                <label for="salaryRoleInput">Role / Title:</label>
+                <input type="text" id="salaryRoleInput" placeholder="e.g. Frontend Developer" value="Frontend Developer">
+              </div>
+              
+              <div class="salary-result">
+                <span>Estimated Market Range:</span>
+                <h3 id="salaryResultDisplay">$85,000 - $110,000</h3>
+                <span style="font-size: 11px;">Calculated based on average location matches.</span>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- ==========================================
+           5. MESSAGES TAB (SCREEN 22)
+           ========================================== -->
+      <div class="tab-content" id="seekerMessagesTab">
+        <div class="profile-tab-grid" style="grid-template-columns: 1fr 2fr;">
+          <!-- Left: Active Chat List -->
+          <div class="card-widget" style="padding: 16px; max-height: 500px; overflow-y: auto;">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Active Chats</h3>
+            <div id="seekerChatsListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Populated dynamically with active recruiter chats -->
+            </div>
+          </div>
+          
+          <!-- Right: Message Window -->
+          <div class="card-widget" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between; height: 500px;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+              <div class="avatar" id="activeChatAvatar" style="background-color: var(--success-light); color: var(--success);">R</div>
+              <div>
+                <h4 id="activeChatName" style="font-weight: 700; font-size: 14px;">Select a chat</h4>
+                <span id="activeChatStatus" style="font-size: 11px; color: var(--text-light);">Choose a company to view message history</span>
+              </div>
+            </div>
+            
+            <div class="chat-history" id="seekerChatHistory" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
+              <div style="text-align: center; color: var(--text-muted); margin-top: 100px;">
+                <p>Click on a chat to view and reply to direct messages from employers.</p>
+              </div>
+            </div>
+            
+            <div class="chat-input-area" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); overflow: hidden; display: flex;">
+              <input type="text" id="seekerChatInput" placeholder="Type a message to recruiter..." disabled style="border: none; padding: 12px; flex: 1; font-size: 13px;">
+              <button id="sendSeekerMessageBtn" disabled style="background: none; border: none; padding: 0 20px; color: var(--primary); font-weight: 700; cursor: pointer;">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==========================================
+           6. AI CAREERPILOT TAB (LANGGRAPH MULTI-AGENT ARCHITECTURE)
+           ========================================== -->
+      <div class="tab-content" id="seekerCareerPilotTab">
+        
+        <!-- CareerPilot Banner & Controls -->
+        <div class="card-widget" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(99, 102, 241, 0.08)); border: 1px solid rgba(124, 58, 237, 0.25); padding: 24px; margin-bottom: 24px; border-radius: var(--border-radius-lg);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.5px; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);">
+                <span>🤖 LANGGRAPH MULTI-AGENT ARCHITECTURE</span>
+              </div>
+              <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">AI CareerPilot — Autonomous Job & Skill Intelligence</h2>
+              <p style="font-size: 13px; color: var(--text-muted); max-width: 680px; line-height: 1.5;">
+                An autonomous agentic pipeline that orchestrates <strong>Goal Parsing ➔ Resume Extraction ➔ Intelligent Discovery ➔ Skill Matcher ➔ 3-Tier Decision Agent ➔ 14-Day Personalized Learning Roadmap ➔ Adaptive Re-evaluation</strong>.
+              </p>
+            </div>
+            
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn-secondary" id="btnLoadSatyaprakashPreset" style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-color: rgba(124, 58, 237, 0.3); background: var(--bg-card); color: var(--primary);">
+                ⚡ Load Satyaprakash Benchmark
+              </button>
+              <button class="btn-secondary" id="btnSimulateAdaptation" style="font-size: 12px; font-weight: 700; padding: 8px 14px; color: var(--warning); border-color: rgba(245, 158, 11, 0.4); background: var(--bg-card);">
+                🔄 Test API Failover & Adaptation
+              </button>
+            </div>
+          </div>
+
+          <!-- Goal & Resume Input Box -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 20px; margin-top: 18px;">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label style="font-size: 12px; font-weight: 700; display: flex; justify-content: space-between;">
+                <span>🎯 Natural Language Career Goal:</span>
+                <span style="font-size: 11px; color: var(--primary); font-weight: 600;">Autonomous Entity Extraction</span>
+              </label>
+              <input type="text" id="careerGoalPromptInput" placeholder="e.g. Mujhe India mein Software Engineer ki job chahiye (or Java Developer in Bangalore)" value="Mujhe India mein Software Engineer ki job chahiye." style="font-size: 13px; padding: 12px 14px; font-weight: 500;">
+            </div>
+
+            <!-- Quick Preset Prompt Chips -->
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;">
+              <span style="font-size: 11px; color: var(--text-muted); align-self: center; font-weight: 600; margin-right: 4px;">Goal Presets:</span>
+              <span class="badge select-pill prompt-preset-chip active" data-prompt="Mujhe India mein Software Engineer ki job chahiye." style="cursor: pointer; padding: 4px 10px; border-radius: 14px; font-size: 11px; border: 1px solid var(--border-color);">Software Engineer (Fresher / India)</span>
+              <span class="badge select-pill prompt-preset-chip" data-prompt="Looking for a Java Backend Developer role with Spring Boot and SQL in India." style="cursor: pointer; padding: 4px 10px; border-radius: 14px; font-size: 11px; border: 1px solid var(--border-color);">Java Backend Developer</span>
+              <span class="badge select-pill prompt-preset-chip" data-prompt="Need a Full Stack React and Java Engineer opportunity in Bangalore." style="cursor: pointer; padding: 4px 10px; border-radius: 14px; font-size: 11px; border: 1px solid var(--border-color);">Full Stack Developer</span>
+              <span class="badge select-pill prompt-preset-chip" data-prompt="Cloud & DevOps Engineer job requiring Docker, AWS, and Linux." style="cursor: pointer; padding: 4px 10px; border-radius: 14px; font-size: 11px; border: 1px solid var(--border-color);">Cloud & DevOps Engineer</span>
+            </div>
+
+            <!-- Goal Meta Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;">
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Target Role</label>
+                <select id="careerPilotTargetRole" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 12px; font-weight: 600; background: var(--bg-primary);">
+                  <option value="Software Engineer" selected>Software Engineer</option>
+                  <option value="Java Developer">Java Developer</option>
+                  <option value="Backend Developer">Backend Developer</option>
+                  <option value="Full Stack Developer">Full Stack Developer</option>
+                  <option value="Cloud & Platform Engineer">Cloud & Platform Engineer</option>
+                  <option value="Frontend Engineer">Frontend Engineer</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Experience Level</label>
+                <select id="careerPilotExpLevel" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 12px; font-weight: 600; background: var(--bg-primary);">
+                  <option value="Fresher" selected>Fresher (0 Years)</option>
+                  <option value="1-2 Years">Junior (1–2 Years)</option>
+                  <option value="3-5 Years">Mid-Level (3–5 Years)</option>
+                  <option value="6+ Years">Senior (6+ Years)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Target Location</label>
+                <select id="careerPilotLocation" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 12px; font-weight: 600; background: var(--bg-primary);">
+                  <option value="India" selected>India (All Hubs)</option>
+                  <option value="Bangalore, India">Bangalore, India</option>
+                  <option value="Hyderabad, India">Hyderabad, India</option>
+                  <option value="Pune, India">Pune, India</option>
+                  <option value="Remote">Remote</option>
+                  <option value="San Francisco, CA">United States / Global</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">Active Candidate Profile</label>
+                <div id="activeResumeBadgeContainer" style="padding: 7px 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; color: var(--text-main);">
+                  <span>📄 <strong id="activeResumeSourceLabel">Satyaprakash</strong></span>
+                  <span class="badge" style="background: rgba(124, 58, 237, 0.15); color: var(--primary); font-size: 10px;">Java, React, SQL, Mongo</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Run Planner Button -->
+            <button class="btn-primary" id="btnRunCareerPilot" style="width: 100%; padding: 14px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--primary), #4f46e5); display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);">
+              <span>🚀</span>
+              <span>Execute LangGraph Multi-Agent Planner</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. LIVE MULTI-AGENT EXECUTION GRAPH & STREAM -->
+        <div class="card-widget" style="margin-bottom: 24px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">🤖</span>
+              <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Multi-Agent Pipeline Graph & Live Stream</h3>
+            </div>
+            <div id="agentStatusBadge" style="display: inline-flex; align-items: center; gap: 6px; background: var(--success-light); color: var(--success); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--success); display: inline-block;"></span>
+              <span>Agent Graph Ready</span>
+            </div>
+          </div>
+
+          <!-- Interactive Node Pipeline -->
+          <div class="agent-graph-flow">
+            <div class="graph-node completed" id="nodeUserGoal" title="Stage 1: User Goal Specification">
+              <div class="node-icon">🎯</div>
+              <div class="node-text">1. User Goal</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeResume" title="Stage 2: Resume Ingestion">
+              <div class="node-icon">📄</div>
+              <div class="node-text">2. Resume</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeUnderstand" title="Stage 3: Profile Understanding & Entity Extraction">
+              <div class="node-icon">🧠</div>
+              <div class="node-text">3. Understand</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodePlan" title="Stage 4: LangGraph Execution Planning">
+              <div class="node-icon">📋</div>
+              <div class="node-text">4. Plan</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeSearch" title="Stage 5: Multi-Source Job Discovery">
+              <div class="node-icon">🔍</div>
+              <div class="node-text">5. Search</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeAnalyze" title="Stage 6: Job Criteria Decomposition">
+              <div class="node-icon">📊</div>
+              <div class="node-text">6. Analyze</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeCompare" title="Stage 7: Mathematical Skill Overlap Comparison">
+              <div class="node-icon">⚖️</div>
+              <div class="node-text">7. Compare</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeDecide" title="Stage 8: 3-Tier Match Decision Engine">
+              <div class="node-icon">🎯</div>
+              <div class="node-text">8. Decide</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeIdentifyGap" title="Stage 9: High-Demand Market Gap Identification">
+              <div class="node-icon">🧩</div>
+              <div class="node-text">9. Skill Gap</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeCreatePlan" title="Stage 10: 14-Day Roadmap Creation">
+              <div class="node-icon">📅</div>
+              <div class="node-text">10. Roadmap</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeEvaluate" title="Stage 11: Quantitative Skill Evaluation & Testing">
+              <div class="node-icon">⚡</div>
+              <div class="node-text">11. Evaluate</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeAdapt" title="Stage 12: Dynamic Self-Healing & API Failover">
+              <div class="node-icon">🛡️</div>
+              <div class="node-text">12. Self-Heal</div>
+            </div>
+            <div class="graph-arrow">➔</div>
+            <div class="graph-node completed" id="nodeRecommendation" title="Stage 13: Final Hire Match & Interview Dossier">
+              <div class="node-icon">🏆</div>
+              <div class="node-text">13. Dossier</div>
+            </div>
+          </div>
+
+          <!-- Adaptation Notice Box (Shown when simulated failure triggers fallback) -->
+          <div id="adaptationAlertBanner" style="display: none; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--border-radius-sm); padding: 12px 16px; margin-top: 10px; align-items: center; gap: 12px;">
+            <div style="font-size: 20px;">⚠️</div>
+            <div style="flex: 1;">
+              <strong style="color: var(--warning); font-size: 12px; display: block;">Autonomous Adaptation Active:</strong>
+              <span id="adaptationAlertText" style="font-size: 11px; color: var(--text-main);">Primary job search source encountered an error. CareerPilot autonomously switched to the backup job pool without interrupting analysis.</span>
+            </div>
+            <span class="badge" style="background: var(--warning); color: white; font-size: 10px; font-weight: 700;">ROBUSTNESS DEMO</span>
+          </div>
+
+          <!-- Live Activity Log Box -->
+          <div style="margin-top: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Live Agent Activity Stream</span>
+              <span id="activityLogCount" style="font-size: 11px; color: var(--text-light);">10 actions recorded</span>
+            </div>
+            <div id="careerPilotActivityStream" style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 12px; max-height: 160px; overflow-y: auto; font-family: 'Inter', monospace; font-size: 11px; display: flex; flex-direction: column; gap: 6px;">
+              <!-- Real-time logs populate here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CAREERPILOT SUMMARY DASHBOARD METRICS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">CAREER GOAL</div>
+            <div id="metricGoalSummary" style="font-size: 15px; font-weight: 800; color: var(--primary);">Software Engineer</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">Target: Fresher (India)</div>
+          </div>
+
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">RESUME FIT SCORE</div>
+            <div id="metricResumeScore" style="font-size: 24px; font-weight: 800; color: var(--success);">78%</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">Avg Compatibility</div>
+          </div>
+
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">JOBS ANALYZED</div>
+            <div id="metricJobsAnalyzed" style="font-size: 24px; font-weight: 800; color: var(--text-main);">20</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">Market Mandates</div>
+          </div>
+
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">STRONG MATCHES</div>
+            <div id="metricStrongMatches" style="font-size: 24px; font-weight: 800; color: var(--success);">6</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">🟢 Apply Now Ready</div>
+          </div>
+
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">TOP SKILL GAPS</div>
+            <div id="metricSkillGaps" style="font-size: 24px; font-weight: 800; color: var(--warning);">4</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">Skills to Learn</div>
+          </div>
+
+          <div class="card-widget" style="padding: 16px; text-align: center;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">LEARNING PLAN</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--primary);">14-Day Roadmap</div>
+            <div style="font-size: 11px; color: var(--text-light); margin-top: 2px;">Tailored to Gaps</div>
+          </div>
+        </div>
+
+        <!-- 4. MAIN DUAL-COLUMN CONTENT GRID -->
+        <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 24px;">
+          
+          <!-- LEFT COLUMN: RANKED RECOMMENDED JOBS WITH DECISION AGENT -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">🏆</span>
+                <h3 style="font-size: 16px; font-weight: 800; margin: 0;">Ranked Recommended Jobs & Decision Agent</h3>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <span class="badge" style="background: rgba(34, 197, 94, 0.15); color: #15803d; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 10px;">🟢 Apply (≥80%)</span>
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 10px;">🟡 Prepare (60–79%)</span>
+                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: #b91c1c; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 10px;">🔴 Improve (&lt;60%)</span>
+              </div>
+            </div>
+
+            <!-- Jobs List Container -->
+            <div id="careerPilotRankedJobsContainer" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamic job cards will render here -->
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: SKILL GAP ANALYZER & INTERACTIVE RE-EVALUATION -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <!-- A. Skill Gap Analyzer Card -->
+            <div class="card-widget" style="padding: 20px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 18px;">📚</span>
+                <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Skill Gap Analyzer</h3>
+              </div>
+              <p id="skillGapSummaryText" style="font-size: 12px; color: var(--text-main); line-height: 1.4; margin-bottom: 14px; background: var(--bg-primary); padding: 10px; border-radius: var(--border-radius-sm); border-left: 3px solid var(--primary);">
+                Your biggest gaps are <strong>Spring Boot</strong>, <strong>Docker</strong>, and <strong>AWS</strong>.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;" id="skillGapBarsContainer">
+                <!-- Dynamic frequency progress bars -->
+              </div>
+            </div>
+
+            <!-- B. Interactive Re-Evaluation & Adaptive Skill Acquisition Widget -->
+            <div class="card-widget" style="padding: 20px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.04), rgba(59, 130, 246, 0.04)); border: 1px solid rgba(124, 58, 237, 0.2);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 18px;">🔁</span>
+                <h3 style="font-size: 15px; font-weight: 800; margin: 0;">Adaptive Re-Evaluation Engine</h3>
+              </div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+                Completed a new course or project? Click below to simulate instant profile update and observe how CareerPilot dynamically elevates your match score & decision!
+              </p>
+
+              <!-- Quick Skill Add Chips -->
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;" id="reEvalQuickSkillsContainer">
+                <button class="btn-secondary btn-reeval-skill" data-skill="Spring Boot" style="font-size: 11px; padding: 6px 10px; font-weight: 700; color: var(--primary);">+ Completed Spring Boot</button>
+                <button class="btn-secondary btn-reeval-skill" data-skill="Docker" style="font-size: 11px; padding: 6px 10px; font-weight: 700; color: var(--primary);">+ Completed Docker</button>
+                <button class="btn-secondary btn-reeval-skill" data-skill="AWS" style="font-size: 11px; padding: 6px 10px; font-weight: 700; color: var(--primary);">+ Completed AWS</button>
+                <button class="btn-secondary btn-reeval-skill" data-skill="Kubernetes" style="font-size: 11px; padding: 6px 10px; font-weight: 700; color: var(--primary);">+ Completed Kubernetes</button>
+              </div>
+
+              <!-- Re-evaluation Result Comparison Box -->
+              <div id="reEvalComparisonBox" style="display: none; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <strong style="font-size: 12px; color: var(--success);" id="reEvalHeaderLabel">🎉 Dynamic Adaptation Triggered</strong>
+                  <span class="badge" style="background: var(--success); color: white; font-size: 10px; font-weight: 700;" id="reEvalDeltaBadge">+25% MATCH</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11px; margin-bottom: 8px;">
+                  <div style="background: var(--bg-primary); padding: 8px; border-radius: 4px;">
+                    <span style="color: var(--text-muted); display: block;">Before Update:</span>
+                    <strong id="reEvalBeforeScore">50% Match</strong>
+                    <div style="color: var(--danger); font-weight: 600;" id="reEvalBeforeDecision">🔴 Improve Skills First</div>
+                  </div>
+                  <div style="background: rgba(34, 197, 94, 0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(34, 197, 94, 0.3);">
+                    <span style="color: var(--success); display: block;">After Skill Gain:</span>
+                    <strong id="reEvalAfterScore" style="color: var(--success);">75% Match</strong>
+                    <div style="color: #15803d; font-weight: 700;" id="reEvalAfterDecision">🟡 Prepare & Apply</div>
+                  </div>
+                </div>
+                <p id="reEvalExplanation" style="font-size: 11px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                  CareerPilot automatically recalculated your compatibility, removing Spring Boot from your missing list and upgrading your application readiness.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- 5. PERSONALIZED 14-DAY LEARNING ROADMAP SECTION -->
+        <div class="card-widget" style="padding: 24px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(124, 58, 237, 0.12); color: var(--primary); padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-bottom: 4px;">
+                <span>🎓 DYNAMIC CURRICULUM GENERATOR</span>
+              </div>
+              <h3 style="font-size: 17px; font-weight: 800; margin: 0;">14-Day Personalized Career Improvement Plan</h3>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                Generated specifically targeting your identified skill gaps (<span id="learningPlanFocusSkills" style="font-weight: 700; color: var(--primary);">Spring Boot, Docker, AWS</span>).
+              </p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Roadmap Progress:</span>
+              <span class="badge" id="roadmapProgressBadge" style="background: var(--primary); color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px;">0 / 9 Completed</span>
+            </div>
+          </div>
+
+          <!-- Timeline Grid / Day-by-Day Cards -->
+          <div id="learningRoadmapCardsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+            <!-- Dynamic 14-day roadmap cards will populate here -->
+          </div>
+        </div>
+
+      </div>
+      
+    </div>
+
+    <!-- ==========================================
+         RECRUITER DASHBOARD PORTAL
+         ========================================== -->
+    <div class="dashboard-container" id="recruiterDashboard">
+      <div class="dashboard-header">
+        <div class="dashboard-title-area">
+          <h1>Recruiter Management Board</h1>
+          <p>Post open mandates, review matched candidate applications, and schedule calendar screenings.</p>
+        </div>
+        <button class="btn-primary" id="recruiterOpenPostModalBtn">Post a New Job</button>
+      </div>
+      
+      <!-- Sub-Tab Navigation -->
+      <div class="tab-navigation">
+        <div class="tab-nav-item active" data-target="recruiterActiveJobsTab">My Job Postings</div>
+        <div class="tab-nav-item" data-target="recruiterScreenTab">Screen Candidates</div>
+        <div class="tab-nav-item" data-target="recruiterCalendarTab">Interview Schedules</div>
+        <div class="tab-nav-item" data-target="recruiterMessagesTab">Messages</div>
+      </div>
+      
+      <!-- Recruiter Sub-Tab Contents -->
+      
+      <!-- 1. Active Job Postings -->
+      <div class="tab-content active" id="recruiterActiveJobsTab">
+        <div class="recruiter-jobs-grid" id="recruiterActiveJobsGridContainer">
+          <!-- Dynamically populated list of recruiter's posted jobs -->
+        </div>
+      </div>
+      
+      <!-- 2. Candidate Screen Room -->
+      <div class="tab-content" id="recruiterScreenTab">
+        <div class="screening-layout">
+          
+          <div class="candidates-list">
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label for="screenJobSelector">Select Posted Job Opening:</label>
+              <select id="screenJobSelector" style="padding: 10px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+                <!-- Populated dynamically with active postings -->
+              </select>
+            </div>
+            
+            <div id="recruiterCandidatesListContainer" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Applicant list -->
+            </div>
+          </div>
+          
+          <div class="screener-detail-panel" id="recruiterCandidateDetailsPanel">
+            <!-- Details of candidate resume and matching check -->
+            <div style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <p>Select an applicant from the list to screen their resume parsed details and update status.</p>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- 3. Interviews Calendar -->
+      <div class="tab-content" id="recruiterCalendarTab">
+        <div class="calendar-view">
+          <div class="calendar-header">
+            <div class="calendar-title" id="calendarMonthTitle">August 2026</div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-secondary" style="padding: 4px 8px;" id="calendarPrevMonthBtn">&lt;</button>
+              <button class="btn-secondary" style="padding: 4px 8px;" id="calendarNextMonthBtn">&gt;</button>
+            </div>
+          </div>
+          
+          <div class="calendar-grid">
+            <div class="calendar-day-label">Sun</div>
+            <div class="calendar-day-label">Mon</div>
+            <div class="calendar-day-label">Tue</div>
+            <div class="calendar-day-label">Wed</div>
+            <div class="calendar-day-label">Thu</div>
+            <div class="calendar-day-label">Fri</div>
+            <div class="calendar-day-label">Sat</div>
+          </div>
+          <div class="calendar-grid" id="calendarDaysContainer">
+            <!-- Dynamically populated dates cells -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- ==========================================
+           4. MESSAGES TAB (SCREEN 22 - RECRUITER VIEW)
+           ========================================== -->
+      <div class="tab-content" id="recruiterMessagesTab">
+        <div class="profile-tab-grid" style="grid-template-columns: 1fr 2fr;">
+          <!-- Left: Active Seekers Chat List -->
+          <div class="card-widget" style="padding: 16px; max-height: 500px; overflow-y: auto;">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Candidate Chats</h3>
+            <div id="recruiterChatsListContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Populated dynamically with active seeker chats -->
+            </div>
+          </div>
+          
+          <!-- Right: Message Window -->
+          <div class="card-widget" style="padding: 20px; display: flex; flex-direction: column; justify-content: space-between; height: 500px;">
+            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+              <div class="avatar" id="recActiveChatAvatar" style="background-color: var(--primary-light); color: var(--primary);">U</div>
+              <div>
+                <h4 id="recActiveChatName" style="font-weight: 700; font-size: 14px;">Select a candidate</h4>
+                <span id="recActiveChatStatus" style="font-size: 11px; color: var(--text-light);">Choose an applicant to view message history</span>
+              </div>
+            </div>
+            
+            <div class="chat-history" id="recruiterChatHistory" style="flex: 1; overflow-y: auto; margin-bottom: 15px;">
+              <div style="text-align: center; color: var(--text-muted); margin-top: 100px;">
+                <p>Click on a candidate to view and reply to direct messages.</p>
+              </div>
+            </div>
+            
+            <div class="chat-input-area" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); overflow: hidden; display: flex;">
+              <input type="text" id="recruiterChatInput" placeholder="Type a reply..." disabled style="border: none; padding: 12px; flex: 1; font-size: 13px;">
+              <button id="sendRecruiterMessageBtn" disabled style="background: none; border: none; padding: 0 20px; color: var(--primary); font-weight: 700; cursor: pointer;">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- ==========================================
+         AUTHENTICATION / LOGIN OVERLAY (MODAL)
+         ========================================== -->
+    <div class="modal-overlay" id="authModalOverlay">
+      <div class="auth-modal">
+        <button class="close-btn" id="authCloseBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div class="auth-header">
+          <h3 class="auth-title" id="authFormTitle">Sign In</h3>
+          <p class="auth-subtitle" id="authFormSubtitle">Access your personalized SmartHire workspace.</p>
+        </div>
+        
+        <form class="auth-form" id="authMainForm">
+          <!-- Toggle active form state inputs -->
+          <input type="hidden" id="authFormMode" value="login"> <!-- "login" or "signup" -->
+          
+          <!-- Third Party OAuth Providers -->
+          <div class="oauth-providers" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px;">
+            <button type="button" class="btn-oauth google" id="oauthGoogleBtn" style="display: flex; align-items: center; justify-content: center; gap: 10px; background-color: white; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; color: var(--text-main); width: 100%; transition: var(--transition-fast);">
+              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
+            
+            <button type="button" class="btn-oauth whatsapp" id="oauthWhatsappBtn" style="display: flex; align-items: center; justify-content: center; gap: 10px; background-color: #25D366; border: none; padding: 10px; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; color: white; width: 100%; transition: var(--transition-fast);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm5.835-2.316c1.668.989 3.3 1.498 4.909 1.499 5.462 0 9.907-4.414 9.91-9.851.002-2.634-1.019-5.111-2.877-6.974-1.857-1.863-4.331-2.89-6.967-2.891-5.465 0-9.91 4.415-9.913 9.853-.001 1.796.488 3.548 1.416 5.12l-.973 3.557 3.505-.913zm11.385-6.52c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.669.149-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.011c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              </svg>
+              Continue with WhatsApp
+            </button>
+          </div>
+          
+          <div class="oauth-divider" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; color: var(--text-light); font-size: 11px; font-weight: 700;">
+            <div style="flex: 1; height: 1px; background-color: var(--border-color);"></div>
+            <span>OR CONTINUE WITH EMAIL</span>
+            <div style="flex: 1; height: 1px; background-color: var(--border-color);"></div>
+          </div>
+
+          
+          <div class="form-group" id="signupRoleGroup" style="display: none;">
+            <label for="authSelectRole">Account Type</label>
+            <select id="authSelectRole">
+              <option value="seeker">Job Seeker</option>
+              <option value="recruiter">Employer / Recruiter</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="signupNameGroup" style="display: none;">
+            <label for="authFullName">Full Name</label>
+            <input type="text" id="authFullName" placeholder="e.g. Alex Carter">
+          </div>
+          
+          <div class="form-group">
+            <label for="authEmail">Email Address</label>
+            <input type="email" id="authEmail" required placeholder="name@company.com">
+          </div>
+          
+          <div class="form-group">
+            <label for="authPassword">Password</label>
+            <input type="password" id="authPassword" required placeholder="••••••••">
+          </div>
+          
+          <div class="auth-actions" id="loginOptionsArea">
+            <label class="remember-me">
+              <input type="checkbox" id="rememberMeCheck"> Remember me
+            </label>
+            <a href="#" class="forgot-pwd" id="authForgotPwdBtn">Forgot password?</a>
+          </div>
+          
+          <button type="submit" class="auth-submit-btn" id="authSubmitBtn">Sign In</button>
+          
+          <div class="auth-footer">
+            <span id="authToggleText">Don't have an account?</span>
+            <a href="#" id="authToggleModeBtn">Sign Up</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GOOGLE ACCOUNT CHOOSER OAUTH MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="googleAccountChooserModal">
+      <div class="auth-modal" style="max-width: 440px; border-radius: 16px;">
+        <button class="close-btn" id="googleAccountCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div style="padding: 32px 28px 16px; text-align: center;">
+          <!-- Google Logo -->
+          <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <svg width="40" height="40" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+            </svg>
+          </div>
+          <h3 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Sign in with Google</h3>
+          <p style="font-size: 13px; color: var(--text-muted);">Choose an account to continue to <strong>CareerPilot</strong></p>
+        </div>
+
+        <div style="padding: 0 20px 24px; display: flex; flex-direction: column; gap: 8px;">
+          <!-- Account 1: Satyaprakash Prajapati (Real User Account) -->
+          <div class="google-account-item" id="btnGoogleAccSatya" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); cursor: pointer; transition: var(--transition-fast); background: var(--bg-card);">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0;">
+              SP
+            </div>
+            <div style="flex: 1; text-align: left;">
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Satyaprakash Prajapati</div>
+              <div style="font-size: 12px; color: var(--text-muted);">satyaprakashprajapati459@gmail.com</div>
+            </div>
+            <span style="font-size: 11px; background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 2px 8px; border-radius: 12px; font-weight: 700;">Admin</span>
+          </div>
+
+          <!-- Account 2: Alex Carter (Sample Developer) -->
+          <div class="google-account-item" id="btnGoogleAccAlex" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); cursor: pointer; transition: var(--transition-fast); background: var(--bg-card);">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0;">
+              AC
+            </div>
+            <div style="flex: 1; text-align: left;">
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-main);">Alex Carter</div>
+              <div style="font-size: 12px; color: var(--text-muted);">alex.carter.dev@gmail.com</div>
+            </div>
+          </div>
+
+          <!-- Option 3: Use Another Google Account Toggle -->
+          <div class="google-account-item" id="btnGoogleAccCustomToggle" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1px dashed var(--border-color); cursor: pointer; transition: var(--transition-fast); background: var(--bg-primary);">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; flex-shrink: 0;">
+              +
+            </div>
+            <div style="flex: 1; text-align: left;">
+              <div style="font-size: 14px; font-weight: 700; color: var(--primary);">Use another Google account</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Enter your real Gmail address & name</div>
+            </div>
+          </div>
+
+          <!-- Custom Google Account Input Form (Initially Hidden) -->
+          <form id="googleCustomAccountForm" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px; padding: 14px; background: var(--bg-primary); border-radius: 10px; border: 1px solid var(--border-color);">
+            <div class="form-group">
+              <label style="font-size: 11px; font-weight: 700;">Real Full Name</label>
+              <input type="text" id="googleCustomNameInput" placeholder="e.g. Satyaprakash Prajapati" required style="font-size: 13px; padding: 8px 12px;">
+            </div>
+            <div class="form-group">
+              <label style="font-size: 11px; font-weight: 700;">Real Gmail / Google Email</label>
+              <input type="email" id="googleCustomEmailInput" placeholder="e.g. yourname@gmail.com" required style="font-size: 13px; padding: 8px 12px;">
+            </div>
+            <button type="submit" class="btn-primary" style="padding: 10px; font-weight: 700; width: 100%;">Connect with this Google Account</button>
+          </form>
+
+          <div style="font-size: 11px; color: var(--text-light); text-align: center; margin-top: 12px; line-height: 1.4;">
+            To continue, Google will share your name, email address, and profile details with SmartHire.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         PRICING / SUBSCRIPTION PLAN VIEW
+         ========================================== -->
+    <div class="dashboard-container" id="pricingDashboard">
+      <div class="dashboard-header" style="text-align: center; flex-direction: column; align-items: center; max-width: 800px; margin: 0 auto 30px;">
+        <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 8px;">Simple, Transparent Plans</h1>
+        <p style="color: var(--text-muted); font-size: 15px;">Unlock tools designed to fast-track your applications or help you source elite recruits efficiently.</p>
+      </div>
+      
+      <div class="pricing-grid">
+        <!-- Plan 1: Free -->
+        <div class="price-card">
+          <div>
+            <h3 class="price-title">Free Basic</h3>
+            <div class="price-amt">$0<span>/month</span></div>
+            <ul class="price-features">
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                5 Manual applications / day
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Basic AI resume parsing
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Job match score overview
+              </li>
+            </ul>
+          </div>
+          <button class="btn-secondary" style="width: 100%;" id="selectPlanFree">Current Plan</button>
+        </div>
+        
+        <!-- Plan 2: Premium Pro Seeker -->
+        <div class="price-card popular">
+          <div>
+            <h3 class="price-title">Job Seeker Pro</h3>
+            <div class="price-amt">$19<span>/month</span></div>
+            <ul class="price-features">
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Unlimited Auto-Apply submissions
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Detailed matching breakdowns
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Unlimited AI Mock Interviews
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Priority Profile Highlights
+              </li>
+            </ul>
+          </div>
+          <button class="btn-primary" style="width: 100%;" id="selectPlanSeekerPro">Upgrade to Pro</button>
+        </div>
+        
+        <!-- Plan 3: Employer Enterprise -->
+        <div class="price-card">
+          <div>
+            <h3 class="price-title">Enterprise Recruiter</h3>
+            <div class="price-amt">$99<span>/month</span></div>
+            <ul class="price-features">
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Post unlimited job vacancies
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Deep-dive matched candidates list
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Visual scheduler & team calendars
+              </li>
+              <li>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Recruiter direct messaging
+              </li>
+            </ul>
+          </div>
+          <button class="btn-primary" style="width: 100%;" id="selectPlanRecruiterEnt">Buy Recruiter Plan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         RECRUITER CREATE JOB MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="recruiterPostJobModalOverlay">
+      <div class="auth-modal" style="max-width: 550px;">
+        <button class="close-btn" id="recruiterPostJobCloseBtn" type="button" aria-label="Close modal" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div class="auth-header">
+          <h3 class="auth-title">Post a New Job opening</h3>
+          <p class="auth-subtitle">Publish a job mandate. Candidates will be auto-matched based on candidate requirements.</p>
+        </div>
+        
+        <form class="auth-form" id="recruiterJobForm" style="padding: 0 32px 32px;">
+          <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="postJobTitle">Job Title</label>
+              <input type="text" id="postJobTitle" required placeholder="e.g. Senior Frontend Engineer">
+            </div>
+            <div class="form-group">
+              <label for="postJobCompany">Company Name</label>
+              <input type="text" id="postJobCompany" required placeholder="e.g. Google DeepMind">
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="postJobLocation">Location</label>
+              <input type="text" id="postJobLocation" required placeholder="e.g. San Francisco / Remote">
+            </div>
+            <div class="form-group">
+              <label for="postJobType">Location Type</label>
+              <select id="postJobType">
+                <option value="remote">Remote</option>
+                <option value="on-site">On-Site</option>
+                <option value="hybrid">Hybrid</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label for="postJobExperience">Min Experience (Years)</label>
+              <input type="number" id="postJobExperience" min="0" required placeholder="e.g. 3">
+            </div>
+            <div class="form-group">
+              <label for="postJobSalary">Salary Range</label>
+              <input type="text" id="postJobSalary" required placeholder="e.g. $120,000 - $150,000">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="postJobSkills">Required Skills (comma separated)</label>
+            <input type="text" id="postJobSkills" required placeholder="e.g. JavaScript, React, CSS, HTML">
+          </div>
+          
+          <div class="form-group">
+            <label for="postJobDescription">Job Description</label>
+            <textarea id="postJobDescription" placeholder="Detail the day-to-day duties, stack requirements, and candidate expectations..." style="height: 100px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px; resize: vertical;"></textarea>
+          </div>
+          
+          <button type="submit" class="auth-submit-btn">Publish Job Opening</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GLOBAL FOOTER
+         ========================================== -->
+    <footer>
+      <div style="max-width: var(--max-width); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="font-weight: 700;">SmartHire © 2026. Made with ❤️ for Developers & Recruiters.</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <span id="openAdminConsoleLink" style="font-weight: 700; color: var(--primary); cursor: pointer; font-size: 13px;">⚙️ Admin Database Console</span>
+          <a href="#" style="hover: underline;">Privacy Policy</a>
+          <a href="#" style="hover: underline;">Terms of Service</a>
+          <a href="#" style="hover: underline;">Support Center</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+    <!-- ==========================================
+         APPLICATION DETAILS TIMELINE MODAL (SCREEN 18 & 20)
+         ========================================== -->
+    <div class="modal-overlay" id="appDetailsModalOverlay">
+      <div class="auth-modal" style="max-width: 500px;">
+        <button class="close-btn" id="appDetailsCloseBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+          <h3 class="auth-title" id="appDetailsJobTitle" style="font-size: 18px;">Job Title</h3>
+          <p class="auth-subtitle" id="appDetailsCompany" style="font-weight: 700;">Company</p>
+        </div>
+        <div style="padding: 20px 32px 32px;">
+          <!-- Progress Tracking Timeline -->
+          <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 15px; color: var(--text-main);">Application Progress Timeline</h4>
+          <div class="timeline-container" id="appDetailsTimeline" style="padding-left: 8px;">
+            <!-- Dynamically populates with vertical progress items -->
+          </div>
+          
+          <!-- Interview Schedule Card (Screen 20) -->
+          <div id="appDetailsInterviewCard" style="display: none; background-color: var(--primary-light); padding: 15px; border-radius: var(--border-radius-sm); border: 1px solid var(--primary); margin-top: 20px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+              <span>📅</span> Interview Details
+            </h4>
+            <div style="font-size: 12px; line-height: 1.6; color: var(--text-main); margin-bottom: 12px;">
+              <div><strong>Date & Time:</strong> <span id="appDetailsInterviewTime">August 18, 2026 at 10:00 AM</span></div>
+              <div><strong>Duration:</strong> 45 Minutes</div>
+              <div><strong>Platform:</strong> Google Meet</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <a id="appJoinInterviewBtn" href="https://meet.google.com/abc-defg-hij" target="_blank" class="btn-primary" style="flex: 1; text-align: center; text-decoration: none; font-size: 11px; padding: 6px 12px;">Join Interview</a>
+              <button id="appRescheduleBtn" class="btn-secondary" style="flex: 1; font-size: 11px; padding: 6px 12px;">Reschedule</button>
+            </div>
+          </div>
+          
+          <!-- Withdraw Button -->
+          <div style="margin-top: 30px; text-align: center;">
+            <button class="btn-secondary" id="appDetailsWithdrawBtn" style="background-color: var(--danger-light); color: var(--danger); border: none; width: 100%;">Withdraw Application</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         CARD PAYMENT CHECKOUT MODAL (SCREEN 24)
+         ========================================== -->
+    <div class="modal-overlay" id="checkoutModalOverlay">
+      <div class="auth-modal" style="max-width: 440px;">
+        <button class="close-btn" id="checkoutCloseBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header">
+          <h3 class="auth-title">Upgrade to SmartHire Pro</h3>
+          <p class="auth-subtitle">Secure Payment Checkout via Credit/Debit card.</p>
+        </div>
+        <form class="auth-form" id="checkoutPaymentForm" style="padding: 0 32px 32px;">
+          <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" placeholder="4242 4242 4242 4242" required style="font-family: monospace;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" placeholder="MM/YY" required style="font-family: monospace;">
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="password" placeholder="***" required style="font-family: monospace;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" placeholder="e.g. Alex Carter" required>
+          </div>
+          <div style="text-align: center; margin: 15px 0; font-size: 11px; color: var(--text-light);">
+            🔒 Encrypted Payment Secure Connection
+          </div>
+          <button type="submit" class="auth-submit-btn" style="background-color: var(--success); font-weight: 700;">Pay $29 / month</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         CAREERPILOT SHAREABLE FEEDBACK & REVIEW CENTER
+         ========================================== -->
+    <div class="modal-overlay" id="feedbackModalOverlay">
+      <div class="auth-modal" style="max-width: 680px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="feedbackCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="auth-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(99, 102, 241, 0.08));">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+            <span style="font-size: 24px;">💬</span>
+            <h3 class="auth-title" style="margin: 0; font-size: 20px;">CareerPilot Feedback & Review Hub</h3>
+          </div>
+          <p class="auth-subtitle" style="margin: 0;">Share your experience, feature requests & ratings to help us continuously improve CareerPilot.</p>
+        </div>
+
+        <div style="padding: 20px 28px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;">
+          
+          <!-- 1. SHAREABLE LINK BOX -->
+          <div style="background: var(--bg-primary); border: 1.5px dashed var(--primary); border-radius: var(--border-radius-sm); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div style="font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                <span>🔗</span> <span>YOUR SHAREABLE FEEDBACK LINK</span>
+              </div>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); font-size: 10px; font-weight: 700;">Public Access Ready</span>
+            </div>
+            
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="shareableFeedbackLinkInput" readonly value="http://localhost:5173/?view=feedback" style="flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px 12px; font-size: 12px; font-family: monospace; border-radius: var(--border-radius-sm); color: var(--text-main);">
+              <button type="button" id="btnCopyFeedbackLink" class="btn-primary" style="font-size: 12px; padding: 8px 16px; font-weight: 700; white-space: nowrap;">📋 Copy Link</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 2px;">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">1-Click Quick Share:</span>
+              <button type="button" id="btnShareFeedbackWhatsApp" class="btn-secondary" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; border-color: #25D366; color: #25D366;">
+                <span>📲</span> <span>WhatsApp</span>
+              </button>
+              <button type="button" id="btnShareFeedbackLinkedIn" class="btn-secondary" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; border-color: #0A66C2; color: #0A66C2;">
+                <span>💼</span> <span>LinkedIn</span>
+              </button>
+              <button type="button" id="btnShareFeedbackEmail" class="btn-secondary" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px;">
+                <span>✉️</span> <span>Email</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. SUBMIT FEEDBACK FORM -->
+          <form id="feedbackSubmitForm" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px;">
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 700;">Your Name</label>
+                <input type="text" id="feedbackUserName" placeholder="e.g. Satyaprakash / Alex Carter" required style="font-size: 12px; padding: 8px 12px;">
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px; font-weight: 700;">Your Role / Persona</label>
+                <select id="feedbackUserRole" style="font-size: 12px; padding: 8px 12px;">
+                  <option value="Job Seeker / Fresher" selected>Job Seeker / Fresher</option>
+                  <option value="Senior Developer">Senior Developer</option>
+                  <option value="HR Recruiter / Hiring Manager">HR Recruiter / Hiring Manager</option>
+                  <option value="College Student / TPO">College Student / TPO</option>
+                  <option value="Beta Tester">Beta Tester</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Star Rating (1 to 5) -->
+            <div style="background: var(--bg-primary); padding: 14px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); text-align: center;">
+              <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px;">Rate Your CareerPilot Experience</label>
+              <div class="rating-stars" id="ratingStarsContainer" style="display: flex; gap: 10px; justify-content: center; font-size: 32px; cursor: pointer; color: #d1d5db;">
+                <span class="star" data-value="1" title="1 Star - Needs Improvement">★</span>
+                <span class="star" data-value="2" title="2 Stars - Fair">★</span>
+                <span class="star" data-value="3" title="3 Stars - Good">★</span>
+                <span class="star" data-value="4" title="4 Stars - Very Good">★</span>
+                <span class="star" data-value="5" title="5 Stars - Outstanding!">★</span>
+              </div>
+              <div style="font-size: 12px; font-weight: 800; color: #f59e0b; margin-top: 4px;" id="feedbackRatingLabel">5 - Outstanding! (Recommended)</div>
+              <input type="hidden" id="feedbackRatingVal" value="5">
+            </div>
+
+            <!-- Feature Tags -->
+            <div>
+              <label style="font-size: 11px; font-weight: 700; display: block; margin-bottom: 6px;">Which features did you find most valuable?</label>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="feedbackTagsContainer">
+                <span class="badge select-pill active" style="cursor: pointer; border: 1.5px solid var(--primary); background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">🚀 13-Stage CareerPilot DAG</span>
+                <span class="badge select-pill active" style="cursor: pointer; border: 1.5px solid var(--primary); background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">🎙️ Live AI Interview Room</span>
+                <span class="badge select-pill active" style="cursor: pointer; border: 1.5px solid var(--primary); background: var(--primary-light); color: var(--primary); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">📄 ATS Resume Scorer (100/100)</span>
+                <span class="badge select-pill" style="cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-muted); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">📅 14-Day Roadmap</span>
+                <span class="badge select-pill" style="cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-muted); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">✉️ AI Cover Letter Generator</span>
+              </div>
+            </div>
+
+            <!-- Feedback Message -->
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Your Detailed Review & Suggestions</label>
+              <textarea id="feedbackText" required placeholder="Write your honest feedback, suggestions, or features you'd like to see next..." rows="3" style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px; font-size: 12px; line-height: 1.5; background: var(--bg-card); color: var(--text-main); resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary" style="padding: 12px; font-size: 13px; font-weight: 800; background: linear-gradient(135deg, var(--primary), #4f46e5); display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>⭐ Submit Your Review</span>
+            </button>
+          </form>
+
+          <!-- 3. PUBLIC COMMUNITY REVIEWS WALL -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h4 style="font-size: 13px; font-weight: 800; margin: 0; color: var(--text-main);">Recent Tester & Candidate Reviews</h4>
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;" id="feedbackCountLabel">3 Reviews Recorded</span>
+            </div>
+
+            <div id="feedbackCommunityList" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Sample Review 1 -->
+              <div class="card-widget" style="padding: 12px 14px; border-left: 3px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <div>
+                    <strong style="font-size: 12px; color: var(--text-main);">Satyaprakash Prajapati</strong>
+                    <span style="font-size: 10px; color: var(--text-muted); margin-left: 6px;">• Software Engineer (Fresher)</span>
+                  </div>
+                  <span style="color: #f59e0b; font-size: 13px; font-weight: 800;">★★★★★ 5.0</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 0; line-height: 1.4;">"The 13-stage autonomous pipeline and live AI mock interview gave me exact feedback on my Spring Boot gap and built a 14-day study plan!"</p>
+              </div>
+
+              <!-- Sample Review 2 -->
+              <div class="card-widget" style="padding: 12px 14px; border-left: 3px solid #f59e0b;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                  <div>
+                    <strong style="font-size: 12px; color: var(--text-main);">Alex Carter</strong>
+                    <span style="font-size: 10px; color: var(--text-muted); margin-left: 6px;">• Senior Backend Lead</span>
+                  </div>
+                  <span style="color: #f59e0b; font-size: 13px; font-weight: 800;">★★★★★ 5.0</span>
+                </div>
+                <p style="font-size: 11px; color: var(--text-muted); margin: 0; line-height: 1.4;">"Awesome AI Interview Room with real-time video telemetry & STAR scoring. Cut candidate screening time drastically."</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         RESUME UPLOAD OPTIONS DIALOG
+         ========================================== -->
+    <div class="modal-overlay" id="resumeUploadOptionsModal">
+      <div class="auth-modal" style="max-width: 480px;">
+        <button class="close-btn" id="resumeOptionsCloseBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header">
+          <h3 class="auth-title">Choose Onboarding Mode</h3>
+          <p class="auth-subtitle">Resume successfully detected! Select how you'd like to configure your professional profile.</p>
+        </div>
+        <div style="padding: 0 32px 32px; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Option A: AI Automatically Fill -->
+          <div class="card-widget" id="btnOptionAutoAI" style="padding: 16px; border: 2px solid var(--primary); cursor: pointer; transition: var(--transition-fast); display: flex; gap: 12px; align-items: flex-start; text-align: left;">
+            <div style="font-size: 24px;">🤖</div>
+            <div>
+              <h4 style="font-weight: 800; font-size: 13px; color: var(--primary); margin-bottom: 4px;">Automatic AI Setup (Recommended)</h4>
+              <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Let SmartHire's AI read your resume, extract your key skills, education, and years of experience, and automatically populate your setup wizard.</p>
+            </div>
+          </div>
+          
+          <!-- Option B: Manual Setup -->
+          <div class="card-widget" id="btnOptionManual" style="padding: 16px; border: 1px solid var(--border-color); cursor: pointer; transition: var(--transition-fast); display: flex; gap: 12px; align-items: flex-start; text-align: left;">
+            <div style="font-size: 24px;">📝</div>
+            <div>
+              <h4 style="font-weight: 800; font-size: 13px; color: var(--text-main); margin-bottom: 4px;">Manual Profile Setup</h4>
+              <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">Skip AI text analysis. Fill in your name, contact details, educational qualification, and skills yourself step-by-step.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         ADMIN SYSTEM DATABASE CONSOLE
+         ========================================== -->
+    <div class="modal-overlay" id="adminConsoleModal">
+      <div class="auth-modal" style="max-width: 640px; width: 90%;">
+        <button class="close-btn" id="adminConsoleCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header">
+          <h3 class="auth-title">⚙️ Admin System Console</h3>
+          <p class="auth-subtitle">Verify stored database state, check counts, and inspect live localStorage.</p>
+        </div>
+        <div style="padding: 0 32px 32px; display: flex; flex-direction: column; gap: 20px;">
+          <!-- Counts grid -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+            <div class="card-widget" style="padding: 12px; text-align: center; background: var(--bg-primary);">
+              <div style="font-size: 18px; font-weight: 800; color: var(--primary);" id="adminCountUsers">0</div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">USERS</div>
+            </div>
+            <div class="card-widget" style="padding: 12px; text-align: center; background: var(--bg-primary);">
+              <div style="font-size: 18px; font-weight: 800; color: var(--primary);" id="adminCountJobs">0</div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">JOBS</div>
+            </div>
+            <div class="card-widget" style="padding: 12px; text-align: center; background: var(--bg-primary);">
+              <div style="font-size: 18px; font-weight: 800; color: var(--primary);" id="adminCountApps">0</div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">APPLICATIONS</div>
+            </div>
+            <div class="card-widget" style="padding: 12px; text-align: center; background: var(--bg-primary);">
+              <div style="font-size: 18px; font-weight: 800; color: var(--primary);" id="adminCountSaved">0</div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; font-weight: 600;">SAVED JOBS</div>
+            </div>
+          </div>
+          
+          <!-- Database viewer -->
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-main);">Live LocalStorage JSON State (smarthire_app_state)</label>
+            <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 12px; max-height: 250px; overflow: auto; text-align: left;">
+              <pre id="adminDatabaseJsonViewer" style="font-family: monospace; font-size: 10px; color: var(--text-main); margin: 0; white-space: pre-wrap; word-break: break-all;"></pre>
+            </div>
+          </div>
+          
+          <!-- Control Actions -->
+          <div style="display: flex; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 15px; flex-wrap: wrap;">
+            <button class="btn-primary" id="btnAdminExportDb" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); font-size: 11px; padding: 8px 14px; flex: 1;">📥 Export JSON Database</button>
+            <button class="btn-secondary" id="btnAdminResetDb" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); font-size: 11px; padding: 8px 14px;">Reset Database</button>
+            <button class="btn-secondary" id="btnAdminClose" style="font-size: 11px; padding: 8px 14px;">Close Console</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         SCHEDULE INTERVIEW MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="scheduleInterviewModalOverlay">
+      <div class="auth-modal" style="max-width: 520px;">
+        <button class="close-btn" id="scheduleInterviewCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="font-size: 24px;">📅</span>
+            <h3 class="auth-title" style="margin: 0;">Schedule Candidate Interview</h3>
+          </div>
+          <p class="auth-subtitle">Configure interview time slot, evaluation track, and AI Agent interviewer settings.</p>
+        </div>
+        <form class="auth-form" id="scheduleInterviewForm" style="padding: 0 32px 32px;">
+          <input type="hidden" id="schedCandidateAppId">
+          
+          <div class="form-group">
+            <label>Candidate</label>
+            <input type="text" id="schedCandidateName" readonly style="background: var(--bg-primary); font-weight: 700; color: var(--text-main);">
+          </div>
+          
+          <div class="form-group">
+            <label>Position & Company</label>
+            <input type="text" id="schedJobInfo" readonly style="background: var(--bg-primary); color: var(--text-muted);">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px;">
+            <div class="form-group">
+              <label for="schedDateTime">Date & Time</label>
+              <input type="datetime-local" id="schedDateTime" required style="font-size: 13px;">
+            </div>
+            <div class="form-group">
+              <label for="schedDuration">Duration</label>
+              <select id="schedDuration">
+                <option value="30">30 Minutes (Rapid)</option>
+                <option value="45" selected>45 Minutes (Standard)</option>
+                <option value="60">60 Minutes (Deep Dive)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Interview Conductor Mode</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <label style="border: 1.5px solid var(--primary); background: var(--primary-light); border-radius: var(--border-radius-sm); padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;">
+                <input type="radio" name="schedMode" value="AI_AGENT" checked>
+                <span>🤖 AI Interviewer Agent</span>
+              </label>
+              <label style="border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                <input type="radio" name="schedMode" value="HUMAN_PANEL">
+                <span>👥 Human Panel</span>
+              </label>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="submit" class="auth-submit-btn" style="flex: 1; background: var(--primary);">Save to Schedule</button>
+            <button type="button" id="btnLaunchAIInterviewImmediate" class="auth-submit-btn" style="flex: 1.2; background: linear-gradient(135deg, #6366f1, #a855f7); font-weight: 700;">🚀 Start AI Interview Now</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         LIVE AI INTERVIEW AGENT ROOM (SIMULATION)
+         ========================================== -->
+    <div class="modal-overlay" id="aiInterviewRoomModalOverlay">
+      <div class="auth-modal" style="max-width: 720px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="aiInterviewRoomCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <!-- Header -->
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="ai-avatar-badge" style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);">
+              🤖
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h3 style="font-size: 16px; font-weight: 800; margin: 0;" id="aiInterviewerTitle">SmartHire AI Interviewer Agent</h3>
+                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); font-size: 10px; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3);">LIVE SESSION</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="aiInterviewCandidateHeader">Candidate: Alex Carter • Role: Frontend Engineer</div>
+            </div>
+          </div>
+          <div style="text-align: right; padding-right: 36px;">
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-light);">ROUND PROGRESS</div>
+            <div style="font-size: 13px; font-weight: 800; color: var(--primary);" id="aiInterviewProgressText">Question 1 of 4</div>
+          </div>
+        </div>
+
+        <!-- Body / Chat & Q&A Workspace -->
+        <div style="padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;" id="aiInterviewMainBody">
+          
+          <!-- Live Question Card -->
+          <div style="background: var(--bg-primary); border: 1.5px solid var(--border-color); border-radius: var(--border-radius-md); padding: 18px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="badge" id="aiQuestionCategoryTag" style="background: var(--primary-light); color: var(--primary); font-weight: 700; font-size: 11px;">Category: Technical Deep Dive</span>
+              <span style="font-size: 11px; color: var(--text-light);" id="aiQuestionTargetTag">Evaluates: System Architecture & STAR</span>
+            </div>
+            <p style="font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--text-main); margin-bottom: 6px;" id="aiActiveQuestionText">
+              Loading question...
+            </p>
+          </div>
+
+          <!-- Live AI Video & Speech Telemetry Box -->
+          <div id="aiVideoTelemetryBox" style="background: var(--bg-card); border: 1.5px solid var(--border-color); border-radius: var(--border-radius-md); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 14px;">📹</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-main);">Live AI Emotion & Speech Telemetry</span>
+                <span class="badge" id="cameraStatusBadge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); font-size: 10px;">Camera Ready</span>
+              </div>
+              <button type="button" id="btnToggleCamView" class="btn-secondary" style="font-size: 10px; padding: 4px 8px;">
+                📷 Toggle Video Feed
+              </button>
+            </div>
+
+            <!-- Video Simulation & Telemetry Metrics Grid -->
+            <div style="display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: center;">
+              <div id="aiWebcamBox" style="height: 100px; background: #0f172a; border-radius: var(--border-radius-sm); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1.5px solid rgba(99, 102, 241, 0.4);">
+                <div style="color: #64748b; font-size: 28px;" id="camPlaceholderIcon">👤</div>
+                <div id="camFaceTrackBox" style="position: absolute; width: 65%; height: 75%; border: 1.5px dashed #10b981; border-radius: 8px; pointer-events: none; display: flex; align-items: flex-start; justify-content: flex-end; padding: 2px;">
+                  <span style="font-size: 8px; background: #10b981; color: white; padding: 1px 3px; border-radius: 2px; font-weight: 700;">TRACKING</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <div style="background: var(--bg-primary); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 10px; color: var(--text-muted);">👁️ Eye Contact</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--success);" id="telemetryEyeContact">94% (High)</div>
+                </div>
+                <div style="background: var(--bg-primary); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 10px; color: var(--text-muted);">🎯 Confidence Score</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--primary);" id="telemetryConfidence">91% (Calm)</div>
+                </div>
+                <div style="background: var(--bg-primary); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 10px; color: var(--text-muted);">🗣️ Speech Clarity</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--success);" id="telemetryClarity">93% (Crisp)</div>
+                </div>
+                <div style="background: var(--bg-primary); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 10px; color: var(--text-muted);">⏱️ Speaking Pace</div>
+                  <div style="font-size: 13px; font-weight: 800; color: var(--text-main);" id="telemetryPace">135 WPM (Optimal)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Answer Input Workspace -->
+          <div id="aiInterviewInputArea" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label style="font-size: 12px; font-weight: 700; color: var(--text-main);">Your Answer / Technical Explanation:</label>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btnSpeechSimulate" class="btn-secondary" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px;">
+                  <span>🎙️</span> <span id="speechBtnText">Simulate Voice Answer</span>
+                </button>
+                <button type="button" id="btnFillSampleAnswer" class="btn-secondary" style="font-size: 11px; padding: 4px 10px;">
+                  ✨ Load STAR Sample
+                </button>
+              </div>
+            </div>
+
+            <textarea id="aiInterviewCandidateInput" rows="4" placeholder="Type or dictate your technical response here (use STAR framework: Situation, Task, Action, Result)..." style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 12px; font-size: 13px; line-height: 1.5; background: var(--bg-card); color: var(--text-main); resize: vertical;"></textarea>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <span style="font-size: 11px; color: var(--text-light);" id="aiAnswerWordCounter">0 words</span>
+              <button type="button" id="btnSubmitAIAnswer" class="btn-primary" style="padding: 10px 24px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span>Submit Answer to AI</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Real-Time Evaluation Result (Appears after answer is submitted) -->
+          <div id="aiAnswerFeedbackCard" style="display: none; background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--border-radius-sm); padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-weight: 800; font-size: 13px; color: var(--primary);">🤖 Real-Time AI Score & Feedback</span>
+              <span class="badge" id="aiInstantScoreBadge" style="background: var(--primary); color: white; font-weight: 800; font-size: 12px;">92% Score</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; text-align: center;">
+              <div style="background: var(--bg-card); padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);">
+                <div style="font-size: 10px; color: var(--text-muted);">Technical Depth</div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--success);" id="aiScoreTech">90%</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);">
+                <div style="font-size: 10px; color: var(--text-muted);">Communication</div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="aiScoreComm">95%</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 6px; border-radius: 4px; border: 1px solid var(--border-color);">
+                <div style="font-size: 10px; color: var(--text-muted);">STAR Alignment</div>
+                <div style="font-size: 14px; font-weight: 800; color: var(--warning);" id="aiScoreStar">90%</div>
+              </div>
+            </div>
+
+            <p style="font-size: 12px; line-height: 1.5; color: var(--text-main); margin-bottom: 12px;" id="aiInstantFeedbackText">
+              Feedback summary...
+            </p>
+
+            <button type="button" id="btnNextAIQuestion" class="btn-primary" style="width: 100%; padding: 10px; font-weight: 700;">
+              Next Question ➔
+            </button>
+          </div>
+
+          <!-- Session Finalized Dossier View (Shows when all 4 questions are done) -->
+          <div id="aiInterviewFinalDossierCard" style="display: none; flex-direction: column; gap: 16px;">
+            <div style="text-align: center; padding: 20px; background: var(--bg-primary); border-radius: var(--border-radius-md); border: 2px solid var(--success);">
+              <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+              <h3 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">AI Interview Completed Successfully!</h3>
+              <p style="font-size: 13px; color: var(--text-muted);">The AI Interviewer Agent has synthesized all responses into an in-memory assessment dossier.</p>
+              
+              <div style="display: inline-flex; align-items: center; gap: 16px; margin: 16px auto; background: var(--bg-card); padding: 12px 24px; border-radius: 30px; border: 1px solid var(--border-color);">
+                <div>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">OVERALL SCORE:</span>
+                  <span style="font-size: 20px; font-weight: 900; color: var(--success); margin-left: 6px;" id="dossierOverallScore">92%</span>
+                </div>
+                <div style="height: 20px; width: 1px; background: var(--border-color);"></div>
+                <div>
+                  <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">RECOMMENDATION:</span>
+                  <span class="badge" style="background: var(--success); color: white; font-weight: 800; font-size: 12px; margin-left: 6px;" id="dossierRecBadge">STRONG HIRE</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+              <button type="button" id="btnSaveAndStoreDossier" class="btn-primary" style="flex: 1; padding: 12px; font-weight: 800; background: var(--success);">💾 Save & Store Dossier in Memory</button>
+              <button type="button" id="btnViewFullTranscriptModal" class="btn-secondary" style="flex: 1; padding: 12px; font-weight: 700;">📄 View Full Q&A Report</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         COMPLETED INTERVIEW REPORT / DOSSIER MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="interviewReportModalOverlay">
+      <div class="auth-modal" style="max-width: 680px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="interviewReportCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+              <span style="font-size: 22px;">📊</span>
+              <h3 class="auth-title" style="margin: 0; font-size: 20px;" id="reportCandidateTitle">AI Interview Assessment Dossier</h3>
+            </div>
+            <p class="auth-subtitle" id="reportSubtitle">Conducted by SmartHire AI Interviewer Agent • In-Memory Record</p>
+          </div>
+          <button type="button" id="btnPrintDossierReport" class="btn-primary" style="font-size: 12px; padding: 8px 16px; display: flex; align-items: center; gap: 6px;">
+            <span>🖨️</span> <span>Print / Save PDF Dossier</span>
+          </button>
+        </div>
+        
+        <div style="padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 18px;" id="interviewReportContentBody">
+          <!-- Populated dynamically with scores, transcript, and strengths -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         AI COVER LETTER & COLD EMAIL GENERATOR MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="coverLetterModalOverlay">
+      <div class="auth-modal" style="max-width: 650px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="coverLetterCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div class="auth-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+            <span style="font-size: 22px;">✉️</span>
+            <h3 class="auth-title" style="margin: 0; font-size: 20px;" id="coverLetterJobTitle">AI Tailored Cover Letter</h3>
+          </div>
+          <p class="auth-subtitle" id="coverLetterSubtitle">Automatically written by CareerPilot AI Agent to match your profile with target JD</p>
+        </div>
+
+        <div style="padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px;">
+          <!-- Format Selector (Cover Letter vs 3-Sentence Cold Email) -->
+          <div style="display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <button type="button" id="btnTabCoverLetterFull" class="btn-primary" style="font-size: 12px; padding: 6px 14px;">📄 Full Cover Letter</button>
+            <button type="button" id="btnTabColdEmail" class="btn-secondary" style="font-size: 12px; padding: 6px 14px;">⚡ 3-Sentence Cold Email</button>
+          </div>
+
+          <textarea id="coverLetterOutputText" rows="11" style="width: 100%; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 14px; font-size: 13px; line-height: 1.6; background: var(--bg-primary); color: var(--text-main); font-family: inherit; resize: vertical;"></textarea>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <span style="font-size: 11px; color: var(--success); font-weight: 700;" id="coverLetterCopyStatus">✓ AI Generated based on your Java, React & SQL profile</span>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" id="btnCopyCoverLetter" class="btn-secondary" style="font-size: 12px; padding: 8px 16px;">📋 Copy Text</button>
+              <button type="button" id="btnSendEmailDirect" class="btn-primary" style="font-size: 12px; padding: 8px 16px;">🚀 Open Mail Client</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         LIVE RAZORPAY / UPI & CARD CHECKOUT MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="checkoutModalOverlay">
+      <div class="auth-modal" style="max-width: 520px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="checkoutCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div style="padding: 24px 28px 16px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(99, 102, 241, 0.08));">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 22px;">💳</span>
+              <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--text-main);">CareerPilot Pro Checkout</h3>
+            </div>
+            <span class="badge" style="background: var(--success-light); color: var(--success); font-weight: 800; font-size: 11px;">🔒 256-bit Secure</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Instant access to Unlimited AI Mock Interviews, 14-Day Roadmap & ATS Booster.</p>
+        </div>
+
+        <div style="padding: 20px 28px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Plan Selected Summary -->
+          <div style="background: var(--bg-primary); border: 1.5px solid var(--primary); border-radius: var(--border-radius-sm); padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted);">SELECTED PLAN</div>
+              <div style="font-size: 15px; font-weight: 800; color: var(--text-main);" id="checkoutPlanName">Job Seeker Pro Monthly</div>
+              <div style="font-size: 11px; color: var(--success); font-weight: 600;">✓ Includes Unlimited AI Interviews & ATS Optimizer</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 22px; font-weight: 900; color: var(--primary);" id="checkoutPlanPrice">₹499</div>
+              <div style="font-size: 10px; color: var(--text-light);">Billed Monthly</div>
+            </div>
+          </div>
+
+          <!-- Payment Method Selector (UPI / QR vs Card) -->
+          <div>
+            <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 8px;">Select Payment Method:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <button type="button" id="payMethodUpiBtn" class="btn-primary" style="padding: 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>📱</span> <span>UPI / QR Code</span>
+              </button>
+              <button type="button" id="payMethodCardBtn" class="btn-secondary" style="padding: 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>💳</span> <span>Card / NetBanking</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section A: UPI & QR Code Simulator -->
+          <div id="paymentSectionUPI" style="display: flex; flex-direction: column; gap: 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 16px;">
+            <div style="display: align-items: center; gap: 16px; display: flex;">
+              <!-- Simulated QR Box -->
+              <div style="width: 100px; height: 100px; background: white; border: 2px solid var(--text-main); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; flex-shrink: 0; box-shadow: var(--shadow-sm);">
+                <div style="font-size: 40px;">📱</div>
+                <span style="font-size: 8px; font-weight: 900; color: #000; letter-spacing: 0.5px;">CAREERPILOT UPI</span>
+              </div>
+              <div>
+                <div style="font-size: 12px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Scan with any UPI App</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">GPay, PhonePe, Paytm, CRED or BHIM</div>
+                <div style="background: var(--bg-primary); padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; font-weight: 700; color: var(--primary);">
+                  satyaprakashprajapati459@okaxis
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px;">Or Enter Your UPI VPA ID:</label>
+              <input type="text" id="upiVpaInput" placeholder="yourname@okaxis / yourname@paytm" value="satyaprakashprajapati459@okaxis" style="font-size: 12px; padding: 8px 12px;">
+            </div>
+          </div>
+
+          <!-- Section B: Card Form (Hidden by default) -->
+          <div id="paymentSectionCard" style="display: none; flex-direction: column; gap: 10px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 16px;">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px;">Card Number</label>
+              <input type="text" id="cardNumInput" placeholder="4532 •••• •••• 8921" value="4532 8821 9902 4410" style="font-size: 12px; padding: 8px 12px;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px;">Expiry (MM/YY)</label>
+                <input type="text" id="cardExpInput" placeholder="12/28" value="08/29" style="font-size: 12px; padding: 8px 12px;">
+              </div>
+              <div class="form-group" style="margin: 0;">
+                <label style="font-size: 11px;">CVV</label>
+                <input type="password" id="cardCvvInput" placeholder="•••" value="882" style="font-size: 12px; padding: 8px 12px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Payment Action -->
+          <button type="button" id="btnExecutePayment" class="btn-primary" style="padding: 14px; font-size: 14px; font-weight: 800; background: linear-gradient(135deg, var(--success), #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>⚡ Pay & Activate Pro Instantly</span>
+          </button>
+
+          <div style="font-size: 11px; color: var(--text-light); text-align: center;">
+            🛡️ 100% Money-back guarantee within 7 days. Cancel anytime.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         FLOATING QUICK QA / TEST MODE BUTTON
+         ========================================== -->
+    <button id="floatingTestModeBtn" type="button" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 10px 18px; border-radius: 30px; font-weight: 800; font-size: 13px; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 0.2s ease;">
+      <span>🧪</span> <span>Testing Mode (15/15 PASS)</span>
+    </button>
+
+    <!-- ==========================================
+         INTERACTIVE TESTING & QA PLAYGROUND MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="testModeModalOverlay">
+      <div class="auth-modal" style="max-width: 760px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+        <button class="close-btn" id="testModeCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="auth-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: align-items: center; gap: 10px; display: flex;">
+              <div style="width: 40px; height: 40px; border-radius: 10px; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                🧪
+              </div>
+              <div>
+                <h3 class="auth-title" style="margin: 0; font-size: 20px;">CareerPilot Testing & QA Suite</h3>
+                <p class="auth-subtitle" style="margin: 0;">Interactive test automation, scenario presets & live AI engine verification</p>
+              </div>
+            </div>
+            <div id="testSuiteLiveBadge" style="background: var(--success-light); color: var(--success); font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
+              ● 15/15 Tests Passed
+            </div>
+          </div>
+        </div>
+
+        <!-- Testing Console Subtabs -->
+        <div style="display: flex; gap: 12px; padding: 12px 24px 0; border-bottom: 1px solid var(--border-color); background: var(--bg-card);">
+          <button type="button" id="tabQATests" class="btn-primary" style="font-size: 12px; padding: 6px 14px; border-radius: 6px 6px 0 0;">⚡ 15-Test Automated Suite</button>
+          <button type="button" id="tabQAScenarios" class="btn-secondary" style="font-size: 12px; padding: 6px 14px; border-radius: 6px 6px 0 0;">🎭 Scenario Presets</button>
+          <button type="button" id="tabQASystem" class="btn-secondary" style="font-size: 12px; padding: 6px 14px; border-radius: 6px 6px 0 0;">⚙️ System Controls</button>
+        </div>
+
+        <!-- Subtab 1: Automated Test Runner -->
+        <div id="qaPanelTests" style="padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary); padding: 12px 16px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color);">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Full AI Engine Test Suite</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Executes Matching Math, ATS Parser, 13-Stage DAG, Failover & Interview Agent tests</div>
+            </div>
+            <button type="button" id="btnRunLiveTests" class="btn-primary" style="font-weight: 800; font-size: 12px; padding: 8px 18px; background: linear-gradient(135deg, #10b981, #059669);">
+              ▶️ Run All 15 Tests
+            </button>
+          </div>
+
+          <!-- Live Test Execution Results Container -->
+          <div id="qaTestCardsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Subtab 2: Scenario Presets -->
+        <div id="qaPanelScenarios" style="display: none; padding: 20px 24px; overflow-y: auto; flex: 1; flex-direction: column; gap: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Click any scenario to instantly load candidate profiles, test goals, and verify algorithm outcomes:</div>
+          
+          <!-- Scenario 1: Satyaprakash (Fresher) -->
+          <div class="card-widget" style="padding: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--primary);">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Scenario 1: Fresher Benchmark (Satyaprakash)</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Skills: Java, React, SQL, MongoDB • Exp: 0 Yrs (Fresher) • Location: India</div>
+              <div style="font-size: 10px; color: var(--success); font-weight: 700; margin-top: 2px;">Expected Outcome: 93% match on Software Engineer, Day 1-14 Roadmap generated</div>
+            </div>
+            <button type="button" id="btnLoadScenario1" class="btn-primary" style="font-size: 11px; padding: 6px 14px;">Load & Run</button>
+          </div>
+
+          <!-- Scenario 2: Senior Architect -->
+          <div class="card-widget" style="padding: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #10b981;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Scenario 2: Senior Backend Architect (Alex Carter)</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Skills: Node.js, Git, PostgreSQL, AWS, Express • Exp: 8 Yrs • Location: Austin</div>
+              <div style="font-size: 10px; color: var(--success); font-weight: 700; margin-top: 2px;">Expected Outcome: 100% match on TechCorp Backend Lead</div>
+            </div>
+            <button type="button" id="btnLoadScenario2" class="btn-secondary" style="font-size: 11px; padding: 6px 14px;">Load & Run</button>
+          </div>
+
+          <!-- Scenario 3: Autonomous Failover / Fault Injection -->
+          <div class="card-widget" style="padding: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--warning);">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Scenario 3: API 503 Outage & Autonomous Failover</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Simulates primary job API failure -> triggers self-healing Adapt Agent</div>
+              <div style="font-size: 10px; color: var(--warning); font-weight: 700; margin-top: 2px;">Expected Outcome: Adaptation triggered, backup dataset ingested without crash</div>
+            </div>
+            <button type="button" id="btnLoadScenario3" class="btn-secondary" style="font-size: 11px; padding: 6px 14px; color: var(--warning); border-color: var(--warning);">Inject Fault</button>
+          </div>
+        </div>
+
+        <!-- Subtab 3: System Controls -->
+        <div id="qaPanelSystem" style="display: none; padding: 20px 24px; overflow-y: auto; flex: 1; flex-direction: column; gap: 14px;">
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Reset Database to Factory Default</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Clears local cache and restores original sample candidates, jobs, and applications.</div>
+            </div>
+            <button type="button" id="btnQAResetDB" class="btn-secondary" style="color: var(--danger); border-color: var(--danger); font-size: 11px; padding: 6px 14px;">Reset State</button>
+          </div>
+
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Simulate Live Recruiter Ping</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Broadcasts an incoming recruiter chat message and notification alert.</div>
+            </div>
+            <button type="button" id="btnQAPingRecruiter" class="btn-secondary" style="font-size: 11px; padding: 6px 14px;">Trigger Ping</button>
+          </div>
+
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Export JSON State Snapshot</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Downloads current in-memory application state as a JSON file for debugging.</div>
+            </div>
+            <button type="button" id="btnQAExportState" class="btn-primary" style="font-size: 11px; padding: 6px 14px;">Download JSON</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div> <!-- End .app-container -->
+
+  <!-- Application Core Scripts -->
+  <script src="data-mock.js"></script>
+  <script src="ai-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
