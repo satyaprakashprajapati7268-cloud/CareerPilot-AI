@@ -50,6 +50,9 @@
     }
   </script>
 
+  <!-- Official Google Identity Services SDK for Real Device Google Account Selection -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -1355,19 +1358,26 @@
             </div>
           </div>
 
-          <!-- Option 3: Use Another Google Account Toggle -->
-          <div class="google-account-item" id="btnGoogleAccCustomToggle" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1px dashed var(--border-color); cursor: pointer; transition: var(--transition-fast); background: var(--bg-primary);">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; flex-shrink: 0;">
+          <!-- Google Official GIS Button Container -->
+          <div id="googleOfficialBtnMount" style="display: flex; justify-content: center; margin: 4px 0 10px;"></div>
+
+          <!-- Option 3: Use Another Google Account Toggle / Device Account Picker -->
+          <div class="google-account-item" id="btnGoogleAccCustomToggle" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1.5px dashed var(--primary); cursor: pointer; transition: var(--transition-fast); background: var(--primary-light);">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; flex-shrink: 0;">
               +
             </div>
             <div style="flex: 1; text-align: left;">
-              <div style="font-size: 14px; font-weight: 700; color: var(--primary);">Use another Google account</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Enter your real Gmail address & name</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--primary);">Use another Google account</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Pick from your Phone / Chrome device accounts or enter details</div>
             </div>
           </div>
 
           <!-- Custom Google Account Input Form (Initially Hidden) -->
           <form id="googleCustomAccountForm" style="display: none; flex-direction: column; gap: 10px; margin-top: 6px; padding: 14px; background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-main);">Enter Google Account:</span>
+              <button type="button" id="btnLaunchGoogleDevicePopup" style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">🌐 Open Google Chooser</button>
+            </div>
             <div class="form-group" style="margin: 0;">
               <label style="font-size: 11px; font-weight: 700;">Your Real Full Name</label>
               <input type="text" id="googleCustomNameInput" placeholder="e.g. Satyaprakash Prajapati" required style="font-size: 13px; padding: 8px 12px;">

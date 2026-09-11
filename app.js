@@ -415,6 +415,7 @@ function init() {
   initDossierPrint();
   initTestModeSuite();
   initFeedbackReviewHub();
+  initGoogleIdentityServices();
   
   // Fast fade out splash screen for instant, snappy loading
   setTimeout(() => {
@@ -609,13 +610,26 @@ function bindEvents() {
       if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
     });
   }
+  
+  const btnLaunchGoogleDevicePopup = document.getElementById('btnLaunchGoogleDevicePopup');
+  if (btnLaunchGoogleDevicePopup) {
+    btnLaunchGoogleDevicePopup.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      launchGoogleDeviceAccountPicker();
+    });
+  }
+
   if (els.btnGoogleAccCustomToggle) {
     els.btnGoogleAccCustomToggle.addEventListener('click', () => {
       if (els.googleCustomAccountForm) {
         const isHidden = els.googleCustomAccountForm.style.display === 'none';
         els.googleCustomAccountForm.style.display = isHidden ? 'flex' : 'none';
-        if (isHidden && els.googleCustomNameInput) {
-          setTimeout(() => els.googleCustomNameInput.focus(), 50);
+        if (isHidden) {
+          launchGoogleDeviceAccountPicker();
+          if (els.googleCustomNameInput) {
+            setTimeout(() => els.googleCustomNameInput.focus(), 50);
+          }
         }
       }
     });
@@ -1726,11 +1740,101 @@ function handleAuthSubmit(e) {
   }
 }
 
+function decodeJwtCredential(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+function handleGoogleCredentialResponse(response) {
+  if (!response || !response.credential) return;
+  const payload = decodeJwtCredential(response.credential);
+  if (payload && payload.email) {
+    const gName = payload.name || payload.given_name || payload.email.split('@')[0];
+    const gEmail = payload.email;
+    const gPicture = payload.picture || "";
+    const gRole = (gEmail.toLowerCase().includes('admin') || gEmail.toLowerCase().includes('recruiter')) ? 'recruiter' : 'seeker';
+
+    authenticateUserWithDetails({
+      email: gEmail,
+      name: gName,
+      role: gRole,
+      picture: gPicture,
+      provider: "Google"
+    });
+
+    if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
+  }
+}
+
+function launchGoogleDeviceAccountPicker() {
+  // 1. Trigger Google GIS One Tap prompt if available on phone / Chrome
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    try {
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          console.log("GIS prompt status:", notification.getNotDisplayedReason());
+        }
+      });
+    } catch (err) {
+      console.log("GIS prompt error:", err);
+    }
+  }
+
+  // 2. Open Google's official Account Chooser in popup
+  try {
+    const redirectUrl = encodeURIComponent(window.location.origin);
+    const googleChooserUrl = `https://accounts.google.com/AccountChooser?service=lso&continue=${redirectUrl}`;
+    window.open(googleChooserUrl, "GoogleAccountChooser", "width=520,height=620,menubar=no,toolbar=no,location=no,status=no");
+    showToast("🌐 Google Account Chooser opened! Select any Google account to sign in.", "info");
+  } catch (e) {
+    console.warn("Could not open Google popup:", e);
+  }
+}
+
+function initGoogleIdentityServices() {
+  if (window.google && window.google.accounts && window.google.accounts.id) {
+    try {
+      google.accounts.id.initialize({
+        client_id: "726883459102-demo.apps.googleusercontent.com",
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+
+      const mount = document.getElementById('googleOfficialBtnMount');
+      if (mount) {
+        mount.innerHTML = '';
+        google.accounts.id.renderButton(mount, {
+          theme: "outline",
+          size: "large",
+          width: 360,
+          text: "signin_with",
+          shape: "pill"
+        });
+      }
+    } catch (e) {
+      console.log("Google GIS Init note:", e);
+    }
+  } else {
+    // Retry initialization once SDK script finishes loading
+    setTimeout(initGoogleIdentityServices, 800);
+  }
+}
+
 function handleOAuthLogin(provider) {
   toggleAuthModal(false);
   if (provider === 'Google') {
     if (els.googleAccountChooserModal) {
       els.googleAccountChooserModal.classList.add('active');
+      initGoogleIdentityServices();
     } else {
       authenticateUserWithDetails({
         email: "satyaprakashprajapati459@gmail.com",
@@ -1759,7 +1863,7 @@ function handleOAuthLogin(provider) {
   }
 }
 
-function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 'Google' }) {
+function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 'Google', picture = '' }) {
   if (email.toLowerCase() === 'satyaprakashprajapati459@gmail.com' || email.toLowerCase().includes('admin')) {
     role = 'recruiter';
   }
@@ -1769,6 +1873,7 @@ function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 
     email: email,
     name: name,
     role: role,
+    picture: picture,
     provider: provider,
     profile: { ...DEFAULT_SEEKER_PROFILE, fullName: name, email: email },
     applications: [...DEFAULT_APPLICATIONS],
@@ -1777,7 +1882,7 @@ function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 
 
   saveStoredUser(oauthUser);
 
-  state.currentUser = { id: oauthUser.id, email, role, name, provider };
+  state.currentUser = { id: oauthUser.id, email, role, name, provider, picture };
   if (role === 'seeker') {
     state.profile = oauthUser.profile;
     state.applications = oauthUser.applications;
@@ -1823,7 +1928,12 @@ function updateAuthHeaderUI() {
     }
 
     if (els.avatarBadge) {
-      els.avatarBadge.textContent = initial;
+      if (state.currentUser.picture) {
+        els.avatarBadge.innerHTML = `<img src="${state.currentUser.picture}" alt="${rawName}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        els.avatarBadge.textContent = initial;
+      }
+
       if (isPremium) {
         els.avatarBadge.classList.add('premium-gold');
         els.avatarBadge.style.backgroundColor = "";
