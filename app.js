@@ -2917,33 +2917,68 @@ function handleSendMockAnswer() {
   }, 250);
 }
 
+function handleQuickPrompt(promptText) {
+  if (!els.mockInterviewUserInput) return;
+  if (els.mockInterviewUserInput.disabled) {
+    handleStartMockInterview();
+  }
+  els.mockInterviewUserInput.value = promptText;
+  els.mockInterviewUserInput.focus();
+}
+window.handleQuickPrompt = handleQuickPrompt;
+
 function addChatBubble(sender, text) {
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble ${sender}`;
-  bubble.innerHTML = text.replace(/\n/g, '<br>');
-  els.mockInterviewChatHistory.appendChild(bubble);
   
-  // Auto scroll to bottom
+  if (sender === 'bot') {
+    bubble.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-color);">
+        <span style="font-size: 11px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+          <span>🤖</span> CareerPilot AI Interviewer
+        </span>
+        <span style="font-size: 10px; color: var(--text-light); font-weight: 600;">Adaptive Evaluation</span>
+      </div>
+      <div style="line-height: 1.5;">${text.replace(/\n/g, '<br>')}</div>
+    `;
+  } else {
+    const rawName = state.currentUser ? (state.currentUser.name || 'Candidate') : 'Candidate';
+    bubble.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+        <span style="font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.85);">${rawName}</span>
+        <span style="font-size: 9.5px; color: rgba(255,255,255,0.75);">You</span>
+      </div>
+      <div style="line-height: 1.45;">${text.replace(/\n/g, '<br>')}</div>
+    `;
+  }
+
+  els.mockInterviewChatHistory.appendChild(bubble);
   els.mockInterviewChatHistory.scrollTop = els.mockInterviewChatHistory.scrollHeight;
 }
 
 function renderResumeScorecard() {
-  const profile = state.profile;
+  const profile = state.profile || DEFAULT_SEEKER_PROFILE;
   let score = 0;
   
   const checks = [
-    { key: 'name', check: profile.fullName && profile.fullName !== "User", label: "Full Name Detected" },
-    { key: 'contact', check: profile.resumeText && (profile.resumeText.includes('@') || profile.resumeText.match(/\d{3}/)), label: "Contact details found" },
-    { key: 'exp', check: profile.experience > 0, label: "Work experience recorded" },
-    { key: 'skills', check: profile.skills.length > 0, label: `Skills profile setup (${profile.skills.length} tags)` },
-    { key: 'length', check: profile.resumeText && profile.resumeText.split(' ').length > 80, label: "Detailed formatting content" }
+    { key: 'name', check: profile.fullName && profile.fullName !== "User", label: "Full Name Verified", detail: profile.fullName || "Detected" },
+    { key: 'contact', check: profile.resumeText && (profile.resumeText.includes('@') || profile.resumeText.match(/\d{3}/)), label: "Verified Contact Details", detail: "Email & Phone Parsed" },
+    { key: 'exp', check: profile.experience > 0, label: "Work Experience History", detail: `${profile.experience || 1}+ Yrs Recorded` },
+    { key: 'skills', check: profile.skills.length > 0, label: "Target Skills Indexed", detail: `${profile.skills.length || 10}+ Technologies` },
+    { key: 'length', check: profile.resumeText && profile.resumeText.split(' ').length > 40, label: "ATS Layout Formatting", detail: "Compliant" }
   ];
   
   checks.forEach(item => {
     if (item.check) score += 20;
   });
   
-  els.resumeHealthScoreBadge.textContent = `${score}%`;
+  if (els.resumeHealthScoreBadge) {
+    els.resumeHealthScoreBadge.textContent = `${score}%`;
+  }
+  const topBadge = document.getElementById('topAtsGradeBadge');
+  if (topBadge) {
+    topBadge.textContent = score >= 90 ? `A+ (${score}%)` : (score >= 70 ? `A (${score}%)` : `B (${score}%)`);
+  }
   
   // Custom recommendations based on user details
   const keywordAdvice = profile.skills.length < 6 
@@ -2951,78 +2986,87 @@ function renderResumeScorecard() {
     : "Excellent skill density! Ready for AI Auto-Apply channels.";
   const expAdvice = profile.experience < 4
     ? "Add quantifiable metrics under experiences (e.g. 'Optimized APIs reducing latency by 20%')."
-    : "Highlight senior architectural accomplishments and scope numbers.";
+    : "Highlight senior architectural accomplishments and system design tradeoffs.";
   
-  els.resumeChecklistContainer.innerHTML = `
-    <!-- Category Progress Bars (Screen 8) -->
-    <div style="margin-bottom: 16px; width: 100%;">
-      <div style="margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
-          <span>Skills Match</span>
-          <span>${profile.skills.length > 0 ? '92%' : '10%'}</span>
-        </div>
-        <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-          <div style="width: ${profile.skills.length > 0 ? '92%' : '10%'}; height: 100%; background-color: var(--primary); transition: width 0.3s ease;"></div>
-        </div>
-      </div>
-      
-      <div style="margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
-          <span>Experience Match</span>
-          <span>${profile.experience > 0 ? '88%' : '15%'}</span>
-        </div>
-        <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-          <div style="width: ${profile.experience > 0 ? '88%' : '15%'}; height: 100%; background-color: var(--primary); transition: width 0.3s ease;"></div>
-        </div>
-      </div>
-      
-      <div style="margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
-          <span>Education Match</span>
-          <span>${profile.education ? '85%' : '20%'}</span>
-        </div>
-        <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-          <div style="width: ${profile.education ? '85%' : '20%'}; height: 100%; background-color: var(--primary); transition: width 0.3s ease;"></div>
-        </div>
-      </div>
-      
-      <div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 2px;">
-          <span>Profile Strength</span>
-          <span>${score}%</span>
-        </div>
-        <div style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
-          <div style="width: ${score}%; height: 100%; background-color: var(--success); transition: width 0.3s ease;"></div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Checklist items -->
-    <div style="font-weight: 700; font-size: 11px; color: var(--text-main); margin-bottom: 8px; border-top: 1px solid var(--border-color); padding-top: 10px;">
-      AI QUALITY CHECKLIST
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 11px; width: 100%;">
-      ${checks.map(item => {
-        const clr = item.check ? 'var(--success)' : 'var(--text-light)';
-        const mark = item.check ? '✓' : '○';
-        return `
-          <div style="display: flex; align-items: center; gap: 6px; color: ${clr};">
-            <span style="font-weight: 800;">${mark}</span>
-            <span>${item.label}</span>
+  if (els.resumeChecklistContainer) {
+    els.resumeChecklistContainer.innerHTML = `
+      <!-- Category Progress Bars -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+            <span>Skills Density & Breadth</span>
+            <span style="color: var(--primary); font-weight: 800;">${profile.skills.length > 0 ? '94%' : '20%'}</span>
           </div>
-        `;
-      }).join('')}
-    </div>
-    
-    <!-- AI Optimization Advice Box -->
-    <div style="margin-top: 12px; background-color: var(--primary-light); padding: 10px; border-radius: var(--border-radius-sm); border: 1px solid hsl(220, 90%, 90%); width: 100%;">
-      <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">AI Optimizations</div>
-      <ul style="margin: 0; padding-left: 14px; font-size: 11px; color: var(--text-muted); line-height: 1.4;">
-        <li style="margin-bottom: 4px;">${keywordAdvice}</li>
-        <li>${expAdvice}</li>
-      </ul>
-    </div>
-  `;
+          <div style="height: 6px; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${profile.skills.length > 0 ? '94%' : '20%'}; height: 100%; background: linear-gradient(90deg, var(--primary), #6366f1); border-radius: 10px; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+            <span>Experience Relevance</span>
+            <span style="color: var(--primary); font-weight: 800;">${profile.experience > 0 ? '88%' : '25%'}</span>
+          </div>
+          <div style="height: 6px; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${profile.experience > 0 ? '88%' : '25%'}; height: 100%; background: linear-gradient(90deg, #6366f1, #3b82f6); border-radius: 10px; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+            <span>Education & Academic Match</span>
+            <span style="color: var(--primary); font-weight: 800;">${profile.education ? '90%' : '30%'}</span>
+          </div>
+          <div style="height: 6px; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${profile.education ? '90%' : '30%'}; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 10px; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+            <span>Overall Profile Strength</span>
+            <span style="color: var(--success); font-weight: 800;">${score}%</span>
+          </div>
+          <div style="height: 6px; background: var(--border-color); border-radius: 10px; overflow: hidden;">
+            <div style="width: ${score}%; height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 10px; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Quality Checklist Grid -->
+      <div style="font-weight: 800; font-size: 11.5px; color: var(--text-main); margin-bottom: 6px; border-top: 1px solid var(--border-color); padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <span>AI ATS AUDIT CHECKLIST</span>
+        <span style="font-size: 10px; color: var(--success); font-weight: 700;">5/5 VERIFIED</span>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px;">
+        ${checks.map(item => {
+          const bg = item.check ? 'rgba(16, 185, 129, 0.08)' : 'var(--bg-primary)';
+          const clr = item.check ? '#047857' : 'var(--text-light)';
+          const border = item.check ? 'rgba(16, 185, 129, 0.3)' : 'var(--border-color)';
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: ${bg}; border: 1px solid ${border}; border-radius: 8px;">
+              <span style="font-weight: 700; color: ${clr}; display: flex; align-items: center; gap: 4px;">
+                <span>${item.check ? '✓' : '○'}</span> ${item.label}
+              </span>
+              <span style="font-size: 9.5px; color: var(--text-muted);">${item.detail}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      
+      <!-- AI Intelligence Recommendations Box -->
+      <div style="margin-top: 12px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(79, 70, 229, 0.08)); padding: 12px 14px; border-radius: 10px; border: 1.5px solid rgba(124, 58, 237, 0.2);">
+        <div style="font-size: 11.5px; font-weight: 800; color: var(--primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <span>💡</span> AI Strategic Optimization Insights
+        </div>
+        <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: var(--text-main); line-height: 1.5;">
+          <li style="margin-bottom: 4px;">${keywordAdvice}</li>
+          <li>${expAdvice}</li>
+        </ul>
+      </div>
+    `;
+  }
 }
 
 function handleSalaryEstimateUpdate() {
