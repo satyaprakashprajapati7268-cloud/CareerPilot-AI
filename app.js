@@ -375,7 +375,22 @@ const els = {
   btnGoogleAccCustomToggle: document.getElementById('btnGoogleAccCustomToggle'),
   googleCustomAccountForm: document.getElementById('googleCustomAccountForm'),
   googleCustomNameInput: document.getElementById('googleCustomNameInput'),
-  googleCustomEmailInput: document.getElementById('googleCustomEmailInput')
+  googleCustomEmailInput: document.getElementById('googleCustomEmailInput'),
+
+  // WhatsApp Login Elements
+  whatsappLoginModal: document.getElementById('whatsappLoginModal'),
+  whatsappCloseBtn: document.getElementById('whatsappCloseBtn'),
+  waStepNumber: document.getElementById('waStepNumber'),
+  waStepOtp: document.getElementById('waStepOtp'),
+  waInputName: document.getElementById('waInputName'),
+  waCountryCode: document.getElementById('waCountryCode'),
+  waInputPhone: document.getElementById('waInputPhone'),
+  waSelectRole: document.getElementById('waSelectRole'),
+  btnWaSendOtp: document.getElementById('btnWaSendOtp'),
+  btnWaQuickLogin: document.getElementById('btnWaQuickLogin'),
+  btnWaVerifyOtp: document.getElementById('btnWaVerifyOtp'),
+  btnWaBackToPhone: document.getElementById('btnWaBackToPhone'),
+  waDisplayTargetPhone: document.getElementById('waDisplayTargetPhone')
 };
 
 /* ==========================================
@@ -555,6 +570,118 @@ function bindEvents() {
   if (els.authMainForm) els.authMainForm.addEventListener('submit', handleAuthSubmit);
   if (els.oauthGoogleBtn) els.oauthGoogleBtn.addEventListener('click', () => handleOAuthLogin('Google'));
   if (els.oauthWhatsappBtn) els.oauthWhatsappBtn.addEventListener('click', () => handleOAuthLogin('WhatsApp'));
+
+  // Google Account Chooser Modal Handlers
+  if (els.googleAccountCloseBtn) {
+    els.googleAccountCloseBtn.addEventListener('click', () => {
+      if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
+    });
+  }
+  if (els.btnGoogleAccSatya) {
+    els.btnGoogleAccSatya.addEventListener('click', () => {
+      authenticateUserWithDetails({
+        email: "satyaprakashprajapati459@gmail.com",
+        name: "Satyaprakash Prajapati (Admin)",
+        role: "recruiter",
+        provider: "Google"
+      });
+      if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
+    });
+  }
+  if (els.btnGoogleAccAlex) {
+    els.btnGoogleAccAlex.addEventListener('click', () => {
+      authenticateUserWithDetails({
+        email: "alex.carter@gmail.com",
+        name: "Alex Carter",
+        role: "seeker",
+        provider: "Google"
+      });
+      if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
+    });
+  }
+  if (els.btnGoogleAccCustomToggle) {
+    els.btnGoogleAccCustomToggle.addEventListener('click', () => {
+      if (els.googleCustomAccountForm) {
+        const isHidden = els.googleCustomAccountForm.style.display === 'none';
+        els.googleCustomAccountForm.style.display = isHidden ? 'flex' : 'none';
+      }
+    });
+  }
+  if (els.googleCustomAccountForm) {
+    els.googleCustomAccountForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const customName = (els.googleCustomNameInput?.value || '').trim() || "Google User";
+      const customEmail = (els.googleCustomEmailInput?.value || '').trim();
+      if (!customEmail) return;
+      authenticateUserWithDetails({
+        email: customEmail,
+        name: customName,
+        role: (customEmail.toLowerCase().includes('admin') || customEmail.toLowerCase().includes('recruiter')) ? 'recruiter' : 'seeker',
+        provider: "Google"
+      });
+      if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
+    });
+  }
+
+  // WhatsApp OTP Verification Modal Handlers
+  if (els.whatsappCloseBtn) {
+    els.whatsappCloseBtn.addEventListener('click', () => {
+      if (els.whatsappLoginModal) els.whatsappLoginModal.classList.remove('active');
+    });
+  }
+  if (els.btnWaSendOtp) {
+    els.btnWaSendOtp.addEventListener('click', () => {
+      const phone = (els.waInputPhone?.value || '').trim();
+      const code = els.waCountryCode?.value || '+91';
+      if (!phone || phone.length < 5) {
+        showToast("Please enter a valid mobile number.", "warning");
+        return;
+      }
+      if (els.waDisplayTargetPhone) els.waDisplayTargetPhone.textContent = `${code} ${phone}`;
+      if (els.waStepNumber) els.waStepNumber.style.display = 'none';
+      if (els.waStepOtp) els.waStepOtp.style.display = 'flex';
+      showToast(`Verification code sent to WhatsApp (${code} ${phone})! Demo code: 7890`, "success");
+      addNotification("WhatsApp Code Dispatched", `4-digit verification code sent to ${code} ${phone}.`, "💬");
+    });
+  }
+  if (els.btnWaBackToPhone) {
+    els.btnWaBackToPhone.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (els.waStepOtp) els.waStepOtp.style.display = 'none';
+      if (els.waStepNumber) els.waStepNumber.style.display = 'flex';
+    });
+  }
+  if (els.btnWaVerifyOtp) {
+    els.btnWaVerifyOtp.addEventListener('click', () => {
+      const name = (els.waInputName?.value || '').trim() || "WhatsApp User";
+      const phone = (els.waInputPhone?.value || '').trim() || "9876543210";
+      const code = els.waCountryCode?.value || '+91';
+      const role = els.waSelectRole?.value || 'seeker';
+
+      authenticateUserWithDetails({
+        email: `${phone.replace(/\s+/g, '')}@whatsapp.user`,
+        name: name,
+        role: role,
+        provider: "WhatsApp"
+      });
+      if (els.whatsappLoginModal) els.whatsappLoginModal.classList.remove('active');
+    });
+  }
+  if (els.btnWaQuickLogin) {
+    els.btnWaQuickLogin.addEventListener('click', () => {
+      const name = (els.waInputName?.value || '').trim() || "Satyaprakash Prajapati";
+      const phone = (els.waInputPhone?.value || '').trim() || "9876543210";
+      const role = els.waSelectRole?.value || 'seeker';
+
+      authenticateUserWithDetails({
+        email: "satyaprakashprajapati459@gmail.com",
+        name: name,
+        role: role,
+        provider: "WhatsApp"
+      });
+      if (els.whatsappLoginModal) els.whatsappLoginModal.classList.remove('active');
+    });
+  }
 
   // Profile Dropdown Menu Items
   if (els.dropdownSignOut) els.dropdownSignOut.addEventListener('click', handleSignOut);
@@ -1584,24 +1711,36 @@ function handleAuthSubmit(e) {
 }
 
 function handleOAuthLogin(provider) {
+  toggleAuthModal(false);
   if (provider === 'Google') {
-    // 1-Click Fast Google Sign-in simulation
-    authenticateUserWithDetails({
-      email: "satyaprakash.google@example.com",
-      name: "Satyaprakash Prajapati",
-      role: "seeker",
-      provider: "Google"
-    });
+    if (els.googleAccountChooserModal) {
+      els.googleAccountChooserModal.classList.add('active');
+    } else {
+      authenticateUserWithDetails({
+        email: "satyaprakashprajapati459@gmail.com",
+        name: "Satyaprakash Prajapati (Admin)",
+        role: "recruiter",
+        provider: "Google"
+      });
+    }
     return;
   }
   
-  // WhatsApp 1-Click login
-  authenticateUserWithDetails({
-    email: "satyaprakash.whatsapp@example.com",
-    name: "Satyaprakash (WhatsApp User)",
-    role: "seeker",
-    provider: "WhatsApp"
-  });
+  if (provider === 'WhatsApp') {
+    if (els.whatsappLoginModal) {
+      if (els.waStepOtp) els.waStepOtp.style.display = 'none';
+      if (els.waStepNumber) els.waStepNumber.style.display = 'flex';
+      els.whatsappLoginModal.classList.add('active');
+    } else {
+      authenticateUserWithDetails({
+        email: "9876543210@whatsapp.user",
+        name: "Satyaprakash Prajapati",
+        role: "seeker",
+        provider: "WhatsApp"
+      });
+    }
+    return;
+  }
 }
 
 function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 'Google' }) {

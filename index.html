@@ -1378,6 +1378,87 @@
     </div>
 
     <!-- ==========================================
+         WHATSAPP SECURE LOGIN & OTP MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="whatsappLoginModal">
+      <div class="auth-modal" style="max-width: 440px; border-radius: 16px;">
+        <button class="close-btn" id="whatsappCloseBtn" type="button" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        
+        <div style="padding: 28px 24px 16px; text-align: center;">
+          <div style="width: 54px; height: 54px; border-radius: 50%; background: #25D366; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm5.835-2.316c1.668.989 3.3 1.498 4.909 1.499 5.462 0 9.907-4.414 9.91-9.851.002-2.634-1.019-5.111-2.877-6.974-1.857-1.863-4.331-2.89-6.967-2.891-5.465 0-9.91 4.415-9.913 9.853-.001 1.796.488 3.548 1.416 5.12l-.973 3.557 3.505-.913zm11.385-6.52c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.669.149-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.521-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.011c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            </svg>
+          </div>
+          <h3 style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Sign in with WhatsApp</h3>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Instant passwordless verification via WhatsApp</p>
+        </div>
+
+        <!-- Step 1: Mobile Number & Name Input -->
+        <div id="waStepNumber" style="padding: 0 24px 24px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label style="font-size: 11px; font-weight: 700;">Full Name</label>
+            <input type="text" id="waInputName" placeholder="e.g. Satyaprakash Prajapati" value="Satyaprakash Prajapati" style="padding: 10px 14px; font-size: 13px; border-radius: 8px;">
+          </div>
+
+          <div class="form-group">
+            <label style="font-size: 11px; font-weight: 700;">WhatsApp Mobile Number</label>
+            <div style="display: flex; gap: 8px;">
+              <select id="waCountryCode" style="width: 85px; padding: 10px 6px; font-size: 12px; font-weight: 700; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card);">
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+971">🇦🇪 +971</option>
+              </select>
+              <input type="tel" id="waInputPhone" placeholder="98765 43210" value="9876543210" style="flex: 1; padding: 10px 14px; font-size: 13px; border-radius: 8px;">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label style="font-size: 11px; font-weight: 700;">Account Role</label>
+            <select id="waSelectRole" style="padding: 10px 14px; font-size: 13px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card);">
+              <option value="seeker">Job Seeker (Candidate)</option>
+              <option value="recruiter">Employer / Recruiter</option>
+            </select>
+          </div>
+
+          <button type="button" id="btnWaSendOtp" style="background: #25D366; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35); transition: var(--transition-fast);">
+            <span>💬</span> Send Verification Code via WhatsApp
+          </button>
+
+          <button type="button" id="btnWaQuickLogin" style="background: rgba(37, 211, 102, 0.1); color: #15803d; border: 1px solid rgba(37, 211, 102, 0.3); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span>⚡</span> 1-Click Instant WhatsApp Connect
+          </button>
+        </div>
+
+        <!-- Step 2: OTP Verification Screen -->
+        <div id="waStepOtp" style="display: none; padding: 0 24px 24px; flex-direction: column; gap: 14px; text-align: center;">
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+            Enter the 4-digit code sent to <strong id="waDisplayTargetPhone" style="color: var(--text-main);">+91 9876543210</strong>
+          </p>
+
+          <div style="display: flex; justify-content: center; gap: 10px; margin: 6px 0;">
+            <input type="text" maxlength="1" class="wa-otp-digit" id="waOtp1" value="7" style="width: 48px; height: 52px; text-align: center; font-size: 22px; font-weight: 800; border-radius: 8px; border: 1.5px solid #25D366; background: rgba(37, 211, 102, 0.05);">
+            <input type="text" maxlength="1" class="wa-otp-digit" id="waOtp2" value="8" style="width: 48px; height: 52px; text-align: center; font-size: 22px; font-weight: 800; border-radius: 8px; border: 1.5px solid #25D366; background: rgba(37, 211, 102, 0.05);">
+            <input type="text" maxlength="1" class="wa-otp-digit" id="waOtp3" value="9" style="width: 48px; height: 52px; text-align: center; font-size: 22px; font-weight: 800; border-radius: 8px; border: 1.5px solid #25D366; background: rgba(37, 211, 102, 0.05);">
+            <input type="text" maxlength="1" class="wa-otp-digit" id="waOtp4" value="0" style="width: 48px; height: 52px; text-align: center; font-size: 22px; font-weight: 800; border-radius: 8px; border: 1.5px solid #25D366; background: rgba(37, 211, 102, 0.05);">
+          </div>
+
+          <button type="button" id="btnWaVerifyOtp" style="background: #25D366; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);">
+            Verify & Sign In 🚀
+          </button>
+
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px;">
+            <a href="#" id="btnWaBackToPhone" style="color: var(--text-muted); font-weight: 600;">← Change Number</a>
+            <span style="color: #15803d; font-weight: 700;">Demo Code: 7890</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
          PRICING / SUBSCRIPTION PLAN VIEW
          ========================================== -->
     <div class="dashboard-container" id="pricingDashboard">
