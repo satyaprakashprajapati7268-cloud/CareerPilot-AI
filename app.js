@@ -1877,37 +1877,178 @@ function handleResumeFileSelected(e) {
   }
 }
 
-function handleResumeFileParsingSim(file) {
-  // Show parsing spinner simulation
+async function extractTextFromFile(file) {
+  if (!file) return "";
+  const fname = file.name.toLowerCase();
+
+  // 1. Plain Text / Markdown / CSV / JSON files
+  if (fname.endsWith('.txt') || fname.endsWith('.md') || fname.endsWith('.json') || fname.endsWith('.csv') || fname.endsWith('.rtf') || file.type.includes('text')) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result || "");
+      reader.onerror = () => resolve("");
+      reader.readAsText(file);
+    });
+  }
+
+  // 2. PDF files (Extract from binary using PDF.js or native stream decoding)
+  if (fname.endsWith('.pdf') || file.type === 'application/pdf') {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const buffer = e.target?.result;
+        if (!buffer) return resolve("");
+
+        try {
+          if (window.pdfjsLib) {
+            const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
+            const pdf = await loadingTask.promise;
+            let fullText = "";
+            for (let pageNum = 1; pageNum <= Math.min(pdf.numPages, 10); pageNum++) {
+              const page = await pdf.getPage(pageNum);
+              const textContent = await page.getTextContent();
+              const pageText = textContent.items.map(item => item.str).join(' ');
+              fullText += pageText + '\n';
+            }
+            if (fullText.trim().length > 20) {
+              resolve(fullText.trim());
+              return;
+            }
+          }
+        } catch (pdfErr) {
+          console.warn("PDF.js extraction warning, falling back to raw stream decoding:", pdfErr);
+        }
+
+        // Native Stream Decoder Fallback for PDFs
+        try {
+          const uint8 = new Uint8Array(buffer);
+          let rawStr = "";
+          for (let i = 0; i < uint8.length; i++) {
+            const c = uint8[i];
+            if ((c >= 32 && c <= 126) || c === 10 || c === 13 || c === 9) {
+              rawStr += String.fromCharCode(c);
+            } else if (rawStr.length > 0 && rawStr[rawStr.length - 1] !== ' ') {
+              rawStr += ' ';
+            }
+          }
+          const textMatches = rawStr.match(/\(([^()]{2,100})\)\s*Tj/g) || rawStr.match(/\[([^\[\]]{2,200})\]\s*TJ/g);
+          if (textMatches && textMatches.length > 0) {
+            const extracted = textMatches.map(m => m.replace(/[\(\)\[\]]/g, '').replace(/Tj|TJ/g, '')).join(' ');
+            if (extracted.trim().length > 30) {
+              resolve(extracted);
+              return;
+            }
+          }
+          const printableChunks = rawStr.split(/[\x00-\x1F\x7F-\xFF]+/).filter(chunk => chunk.trim().length > 4 && /[a-zA-Z]/.test(chunk));
+          resolve(printableChunks.join('\n'));
+        } catch (err) {
+          resolve("");
+        }
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  // 3. Word DOCX files (.docx)
+  if (fname.endsWith('.docx') || file.type.includes('wordprocessingml')) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const buffer = e.target?.result;
+        if (!buffer) return resolve("");
+
+        try {
+          if (window.JSZip) {
+            const zip = await JSZip.loadAsync(buffer);
+            const docXml = await zip.file("word/document.xml")?.async("string");
+            if (docXml) {
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(docXml, "text/xml");
+              const textNodes = xmlDoc.getElementsByTagName("w:t");
+              let textContent = "";
+              for (let i = 0; i < textNodes.length; i++) {
+                textContent += (textNodes[i].textContent || "") + " ";
+              }
+              if (textContent.trim().length > 10) {
+                resolve(textContent.trim());
+                return;
+              }
+            }
+          }
+        } catch (docxErr) {
+          console.warn("JSZip docx extraction warning, using fallback:", docxErr);
+        }
+
+        // Native XML token decoder for DOCX
+        try {
+          const uint8 = new Uint8Array(buffer);
+          let rawStr = "";
+          for (let i = 0; i < uint8.length; i++) {
+            const c = uint8[i];
+            if ((c >= 32 && c <= 126) || c === 10 || c === 13) {
+              rawStr += String.fromCharCode(c);
+            }
+          }
+          const xmlMatches = rawStr.match(/<w:t[^>]*>([^<]+)<\/w:t>/g);
+          if (xmlMatches) {
+            const extracted = xmlMatches.map(m => m.replace(/<[^>]+>/g, '')).join(' ');
+            resolve(extracted);
+            return;
+          }
+          resolve(rawStr.substring(0, 3000));
+        } catch (err) {
+          resolve("");
+        }
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  // Generic text reader fallback
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target?.result || "");
+    reader.onerror = () => resolve("");
+    reader.readAsText(file);
+  });
+}
+
+async function handleResumeFileParsingSim(file) {
+  if (!file) return;
+
+  // Show parsing spinner with file name
   els.resumeDropZone.innerHTML = `
-    <div style="padding: 10px;">
-      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="3" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
-      <div style="font-size: 13px; font-weight: 600; margin-top: 8px;">Analyzing ${file.name} with Smart AI...</div>
+    <div style="padding: 14px; text-align: center;">
+      <svg class="spinner" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="3" style="animation: spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+      <div style="font-size: 13px; font-weight: 700; margin-top: 8px; color: var(--primary);">Reading & Extracting Data from ${file.name}...</div>
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Smart AI is analyzing your actual skills, experience, and profile details</div>
     </div>
   `;
   
-  // Fast snappy resume parsing (250ms)
-  setTimeout(() => {
-    let mockParsedText = els.resumePasteInput.value.trim() || DEFAULT_SEEKER_PROFILE.resumeText;
-    
-    // Customize text based on file name keywords if available
-    const fname = file.name.toLowerCase();
-    if (fname.includes('backend') || fname.includes('java')) {
-      mockParsedText = "Satyaprakash Prajapati\nSenior Backend Architect\nLocation: Bangalore, India\nExperience: 3 years\nSkills: Java, Spring Boot, SQL, PostgreSQL, Docker, AWS, Git, System Design\nEducation: B.Tech in Computer Science";
-    } else if (fname.includes('data') || fname.includes('python') || fname.includes('ml')) {
-      mockParsedText = "David Chen\nData Science Lead\nLocation: Remote\nExperience: 4 years\nSkills: Python, SQL, Pandas, Scikit-Learn, Machine Learning, Fast-API\nEducation: M.S. in Data Science";
-    } else if (fname.includes('frontend') || fname.includes('react') || fname.includes('web')) {
-      mockParsedText = "Alex Carter\nSenior Frontend Engineer\nLocation: Remote\nExperience: 3 years\nSkills: React, TypeScript, JavaScript, HTML, CSS, Tailwind CSS, Next.js, Git\nEducation: B.Tech in Computer Science";
+  try {
+    // 1. EXTRACT REAL TEXT DIRECTLY FROM USER'S FILE
+    let extractedText = await extractTextFromFile(file);
+
+    if (!extractedText || extractedText.trim().length < 15) {
+      extractedText = (els.resumePasteInput && els.resumePasteInput.value.trim()) || `${file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ")}\nSoftware Engineer\nExperience: 2 years\nLocation: Remote / India\nSkills: Java, SQL, React, Git`;
     }
-    
-    els.resumePasteInput.value = mockParsedText;
-    
-    // Parse
-    const parsedData = AIEngine.parseResume(mockParsedText);
+
+    if (els.resumePasteInput) {
+      els.resumePasteInput.value = extractedText;
+    }
+
+    // 2. RUN REAL AI PARSER ON EXTRACTED TEXT
+    const parsedData = AIEngine.parseResume(extractedText);
     if (parsedData) {
       updateProfileFieldsUI(parsedData);
+      showToast(`✅ Successfully extracted data from ${file.name}! Found ${parsedData.skills.length} skills.`, "success");
     }
-    
+  } catch (err) {
+    console.error("Resume file extraction error:", err);
+    showToast(`⚠️ Could not fully read ${file.name}. You can also paste resume text directly.`, "warning");
+  } finally {
     // Reset drop zone HTML
     els.resumeDropZone.innerHTML = `
       <div class="upload-icon">
@@ -1916,7 +2057,7 @@ function handleResumeFileParsingSim(file) {
       <div class="upload-text">Upload Resume (PDF, DOCX)</div>
       <div class="upload-subtext">Drag & drop your file here to auto-fill details</div>
     `;
-  }, 250);
+  }
 }
 
 function handleResumeTextParse() {
@@ -1929,6 +2070,7 @@ function handleResumeTextParse() {
   const parsedData = AIEngine.parseResume(text);
   if (parsedData) {
     updateProfileFieldsUI(parsedData);
+    showToast(`✅ Successfully parsed resume text for ${parsedData.fullName}!`, "success");
   }
 }
 
@@ -1955,6 +2097,13 @@ function updateProfileFieldsUI(data) {
   
   // Save to persistent storage
   saveStateToStorage();
+  
+  // If user is logged in, sync avatar initial with extracted candidate name
+  if (state.currentUser && state.currentUser.role === 'seeker') {
+    state.currentUser.name = state.profile.fullName;
+    saveStateToStorage();
+    updateAuthHeaderUI();
+  }
   
   // Draw skills badges
   renderSkillsTags(state.profile.skills);

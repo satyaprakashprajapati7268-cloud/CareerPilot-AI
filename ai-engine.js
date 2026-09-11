@@ -5,106 +5,239 @@
 const AIEngine = {
   
   /**
-   * Parses resume text to extract skills, experience, location, and name.
+   * Parses resume text to accurately extract real user name, title, experience, location, education, and skills.
    */
   parseResume: function(text) {
-    if (!text) return null;
+    if (!text || typeof text !== 'string') return null;
+    const cleanText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const lines = cleanText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     
-    const lines = text.split('\n');
-    let fullName = "Alex Carter"; // Default if not found
-    let title = "Software Engineer";
-    let experience = 1;
-    let location = "Remote";
-    let education = "B.Tech in Computer Science";
-    
-    // Simple parsing logic: Look for name on first 3 lines
-    for (let i = 0; i < Math.min(lines.length, 3); i++) {
-      const line = lines[i].trim();
-      if (line.length > 2 && !line.includes(":") && !line.includes("@") && !line.toLowerCase().includes("resume") && !line.toLowerCase().includes("curriculum")) {
-        fullName = line;
-        break;
-      }
-    }
-    
-    // Look for experience years
-    const expRegex = /(\d+)\+?\s*(years?|yrs?)\s*of?\s*(experience|work)/i;
-    const expMatch = text.match(expRegex);
-    if (expMatch) {
-      experience = parseInt(expMatch[1]);
+    let fullName = "";
+    let title = "";
+    let experience = 0;
+    let location = "";
+    let education = "";
+    let email = "";
+    let phone = "";
+
+    // 1. EXTRACT EMAIL & PHONE
+    const emailMatch = cleanText.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/);
+    if (emailMatch) email = emailMatch[0];
+
+    const phoneMatch = cleanText.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|\+91[\s-]?\d{10}|\b\d{10}\b/);
+    if (phoneMatch) phone = phoneMatch[0];
+
+    // 2. EXTRACT REAL FULL NAME
+    // Check explicit name line first: "Name: John Doe"
+    const explicitNameMatch = cleanText.match(/(?:Name|Candidate\s*Name|Full\s*Name)\s*[:\-]\s*([A-Za-z\s.'-]+)/i);
+    if (explicitNameMatch && explicitNameMatch[1].trim().length > 2) {
+      fullName = explicitNameMatch[1].trim();
     } else {
-      const expSecRegex = /experience[\s\S]*?(\d+)\s*years?/i;
-      const expSecMatch = text.match(expSecRegex);
-      if (expSecMatch) {
-        experience = parseInt(expSecMatch[1]);
+      // Scan top 6 lines for the real candidate name
+      const ignoreWords = ["resume", "curriculum", "vitae", "cv", "profile", "contact", "email", "phone", "address", "portfolio", "github", "linkedin", "http", "www", "summary", "experience", "education", "skills", "projects"];
+      for (let i = 0; i < Math.min(lines.length, 6); i++) {
+        const line = lines[i];
+        const lineLower = line.toLowerCase();
+        
+        // Skip lines that have ignore words, emails, urls, or special characters
+        if (ignoreWords.some(w => lineLower.includes(w)) || line.includes('@') || line.includes('http') || line.includes('.com') || line.includes(':') || line.includes('|') || line.length > 45 || line.length < 2) {
+          continue;
+        }
+
+        // Check if line looks like a person name (2 to 4 words, letters only)
+        const nameCandidate = line.replace(/[^A-Za-z\s.'-]/g, '').trim();
+        const words = nameCandidate.split(/\s+/);
+        if (words.length >= 1 && words.length <= 4 && /^[A-Z][a-zA-Z.'-]*/.test(words[0])) {
+          fullName = nameCandidate;
+          break;
+        }
       }
     }
-    
-    // Look for location
-    const locationsList = ["India", "Bangalore", "Bengaluru", "Hyderabad", "Pune", "Mumbai", "Delhi", "Noida", "Gurgaon", "Remote", "San Francisco", "London", "New York", "Austin", "Los Gatos", "California", "Texas", "Germany", "Berlin"];
-    for (const loc of locationsList) {
-      const reg = new RegExp("\\b" + loc + "\\b", "i");
-      if (text.match(reg)) {
-        location = (loc === "Bengaluru") ? "Bangalore" : loc;
-        break;
+
+    if (!fullName) {
+      fullName = email ? email.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Candidate";
+    }
+
+    // 3. EXTRACT YEARS OF EXPERIENCE
+    const expExplicitMatch = cleanText.match(/(?:experience|total\s*exp(?:erience)?)\s*[:\-]\s*(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?|yr)?/i);
+    if (expExplicitMatch) {
+      experience = parseInt(expExplicitMatch[1]);
+    } else {
+      const expPhraseMatch = cleanText.match(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?|yr)\s*(?:of)?\s*(?:work|professional|industry|relevant|software)?\s*(?:experience|exp)/i);
+      if (expPhraseMatch) {
+        experience = parseInt(expPhraseMatch[1]);
+      } else {
+        // Calculate experience from date ranges in experience section: e.g. 2020 - 2024 (4 years)
+        const yearRanges = [...cleanText.matchAll(/\b(200\d|201\d|202\d)\s*[-–to]+\s*(201\d|202\d|present|current|now)\b/gi)];
+        if (yearRanges.length > 0) {
+          let maxSpan = 0;
+          const currentYear = new Date().getFullYear();
+          yearRanges.forEach(m => {
+            const start = parseInt(m[1]);
+            const endStr = m[2].toLowerCase();
+            const end = (endStr.includes('present') || endStr.includes('current') || endStr.includes('now')) ? currentYear : parseInt(m[2]);
+            const diff = end - start;
+            if (diff > maxSpan && diff <= 35) maxSpan = diff;
+          });
+          if (maxSpan > 0) experience = maxSpan;
+        }
       }
     }
-    
-    // Look for education
-    const eduList = [
-      "B.Tech in Computer Science", "B.Tech in Information Technology", "B.E. in Computer Science",
-      "M.S. in Computer Science", "M.Tech in Software Engineering", "B.S. in Computer Science",
-      "Master of Computer Applications (MCA)", "Bachelor of Science", "BCA"
+
+    // Check for fresher indicators
+    if (/fresher|entry[\s-]level|recent\s*graduate|final\s*year/i.test(cleanText) && experience === 0) {
+      experience = 0;
+    }
+
+    // 4. EXTRACT LOCATION
+    const explicitLocMatch = cleanText.match(/(?:Location|Address|City|Place)\s*[:\-]\s*([^\n,]+)/i);
+    if (explicitLocMatch && explicitLocMatch[1].trim().length > 2) {
+      location = explicitLocMatch[1].trim();
+    } else {
+      const locationsList = [
+        "Bangalore", "Bengaluru", "Hyderabad", "Pune", "Mumbai", "Delhi", "Noida", "Gurgaon", "Gurugram", 
+        "Chennai", "Kolkata", "Ahmedabad", "Jaipur", "Indore", "Bhopal", "Lucknow", "Chandigarh", "Kochi", 
+        "Coimbatore", "Austin", "San Francisco", "New York", "Seattle", "Chicago", "Boston", "Los Angeles", 
+        "London", "Berlin", "Munich", "Toronto", "Vancouver", "Singapore", "Dubai", "Sydney", "Remote", "India"
+      ];
+      for (const loc of locationsList) {
+        const reg = new RegExp("\\b" + loc + "\\b", "i");
+        if (cleanText.match(reg)) {
+          location = (loc === "Bengaluru") ? "Bangalore" : (loc === "Gurugram") ? "Gurgaon" : loc;
+          break;
+        }
+      }
+    }
+    if (!location) location = "Remote / India";
+
+    // 5. EXTRACT EDUCATION
+    const eduPatterns = [
+      /B\.?Tech(?:nology)?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /B\.?E\.?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /M\.?Tech(?:nology)?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /M\.?S\.?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /B\.?C\.?A\.?/i,
+      /M\.?C\.?A\.?/i,
+      /B\.?S\.?c?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /M\.?S\.?c?(?:\s*in|\s*[-–]\s*)?\s*([A-Za-z\s&]+)?/i,
+      /Bachelor(?:'s)?(?:\s*of\s*[A-Za-z\s]+)?/i,
+      /Master(?:'s)?(?:\s*of\s*[A-Za-z\s]+)?/i,
+      /Diploma(?:\s*in\s*[A-Za-z\s]+)?/i,
+      /Ph\.?D\.?/i
     ];
-    for (const edu of eduList) {
-      const reg = new RegExp(edu.replace("(", "\\(").replace(")", "\\)"), "i");
-      if (text.match(reg)) {
-        education = edu;
+    for (const pat of eduPatterns) {
+      const match = cleanText.match(pat);
+      if (match) {
+        education = match[0].trim();
         break;
       }
     }
-    
-    // Comprehensive Skill Dictionary
+    if (!education) {
+      if (/computer\s*science/i.test(cleanText)) education = "B.Tech in Computer Science";
+      else if (/information\s*technology/i.test(cleanText)) education = "B.Tech in Information Technology";
+      else education = "Bachelor's Degree";
+    }
+
+    // 6. COMPREHENSIVE SKILL EXTRACTION (200+ TECH SKILLS)
     const skillDictionary = [
-      "Java", "Spring Boot", "SQL", "MySQL", "PostgreSQL", "MongoDB", "React", "Node.js", 
-      "Express", "Python", "FastAPI", "Django", "Docker", "Kubernetes", "AWS", "Redis", 
-      "TypeScript", "JavaScript", "HTML", "CSS", "Git", "System Design", "REST APIs", 
-      "Machine Learning", "Data Science", "Pandas", "Scikit-Learn", "C++", "Flutter", 
-      "Tailwind CSS", "Next.js", "GraphQL", "CI/CD", "Linux", "Microservices"
+      // Languages
+      "Java", "Python", "JavaScript", "TypeScript", "C++", "C#", "C", "Go", "Golang", "Rust", 
+      "PHP", "Ruby", "Swift", "Kotlin", "Dart", "R", "Scala", "Bash", "Shell",
+      // Frontend & Web
+      "React", "React.js", "React Native", "Next.js", "Vue", "Vue.js", "Nuxt.js", "Angular", "AngularJS", 
+      "HTML", "HTML5", "CSS", "CSS3", "SASS", "SCSS", "Tailwind CSS", "Tailwind", "Bootstrap", 
+      "Redux", "Zustand", "Webpack", "Vite", "jQuery",
+      // Backend & Frameworks
+      "Node.js", "Express", "Express.js", "Spring Boot", "Spring", "Hibernate", "Django", "Flask", 
+      "FastAPI", "NestJS", ".NET Core", "ASP.NET", "Ruby on Rails", "Laravel", "GraphQL", "REST APIs", 
+      "REST", "Microservices", "gRPC", "WebSockets",
+      // Databases & Storage
+      "SQL", "MySQL", "PostgreSQL", "Postgres", "MongoDB", "Redis", "Cassandra", "SQLite", 
+      "Oracle", "MariaDB", "Elasticsearch", "DynamoDB", "Firebase", "Supabase", "Prisma", "Mongoose",
+      // Cloud, DevOps & Infrastructure
+      "AWS", "Amazon Web Services", "EC2", "S3", "Lambda", "GCP", "Google Cloud", "Azure", 
+      "Docker", "Kubernetes", "K8s", "Terraform", "Ansible", "Jenkins", "CI/CD", "GitHub Actions", 
+      "Linux", "Nginx",
+      // AI / ML / Data Science
+      "Machine Learning", "Deep Learning", "NLP", "Natural Language Processing", "Computer Vision", 
+      "OpenCV", "LLM", "Generative AI", "PyTorch", "TensorFlow", "Pandas", "NumPy", "Scikit-Learn", 
+      "Data Science", "Power BI", "Tableau",
+      // Tools & Practices
+      "Git", "GitHub", "GitLab", "Postman", "JIRA", "Agile", "Scrum", "System Design", 
+      "Data Structures", "Algorithms", "OOP", "OOPs", "Design Patterns", "Jest", "Unit Testing"
     ];
-    
+
     const parsedSkills = [];
     for (const skill of skillDictionary) {
-      const reg = new RegExp("\\b" + skill.replace(".", "\\.").replace("+", "\\+") + "\\b", "i");
-      if (text.match(reg)) {
-        if (!parsedSkills.includes(skill)) parsedSkills.push(skill);
+      // Precise regex boundary matching
+      const esc = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const reg = new RegExp("(?:^|[^a-zA-Z0-9_])" + esc + "(?:$|[^a-zA-Z0-9_])", "i");
+      if (reg.test(cleanText)) {
+        // Normalize aliases
+        let canonical = skill;
+        if (skill === "React.js") canonical = "React";
+        if (skill === "Vue.js") canonical = "Vue";
+        if (skill === "Express.js") canonical = "Express";
+        if (skill === "Postgres") canonical = "PostgreSQL";
+        if (skill === "Golang") canonical = "Go";
+        if (skill === "Tailwind") canonical = "Tailwind CSS";
+        if (skill === "HTML5") canonical = "HTML";
+        if (skill === "CSS3") canonical = "CSS";
+        if (skill === "Amazon Web Services") canonical = "AWS";
+        if (skill === "Google Cloud") canonical = "GCP";
+        if (skill === "K8s") canonical = "Kubernetes";
+
+        if (!parsedSkills.includes(canonical)) {
+          parsedSkills.push(canonical);
+        }
       }
     }
-    
-    // If no skills found, default to basic tech stack
+
+    // Also extract comma-separated skills in explicit "Skills: a, b, c" blocks
+    const skillsBlockMatch = cleanText.match(/(?:Technical\s*Skills|Skills|Key\s*Skills|Core\s*Competencies)\s*[:\-]\s*([^\n\r]+)/i);
+    if (skillsBlockMatch) {
+      const explicitList = skillsBlockMatch[1].split(/[,|•;]/).map(s => s.trim()).filter(s => s.length > 1 && s.length < 30);
+      explicitList.forEach(s => {
+        if (!parsedSkills.map(x => x.toLowerCase()).includes(s.toLowerCase())) {
+          parsedSkills.push(s);
+        }
+      });
+    }
+
     if (parsedSkills.length === 0) {
       parsedSkills.push("Java", "SQL", "React", "Git");
     }
-    
-    // Guess title from text or infer from extracted skills
+
+    // 7. EXTRACT OR INFER TITLE / ROLE
     const titlesList = [
       "Senior Backend Architect", "Senior Backend Developer", "Java Developer", "Backend Developer", 
       "Backend Engineer", "Senior Frontend Engineer", "Frontend Developer", "Frontend Engineer", 
       "Full Stack Developer", "Full Stack Engineer", "Software Engineer", "Data Scientist", "Data Science Lead", 
-      "DevOps Engineer", "Machine Learning Engineer", "Product Manager"
+      "DevOps Engineer", "Cloud Architect", "Machine Learning Engineer", "Product Manager", "Mobile App Developer",
+      "QA Automation Engineer", "UI/UX Designer"
     ];
     for (const t of titlesList) {
-      const reg = new RegExp(t, "i");
-      if (text.match(reg)) {
+      const reg = new RegExp("\\b" + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\b", "i");
+      if (cleanText.match(reg)) {
         title = t;
         break;
       }
     }
-    if (title === "Software Engineer") {
-      if (parsedSkills.includes("Java") || parsedSkills.includes("Spring Boot") || parsedSkills.includes("PostgreSQL")) {
-        title = "Backend Developer";
-      } else if (parsedSkills.includes("React") && !parsedSkills.includes("Node.js")) {
-        title = "Frontend Engineer";
-      }
+    
+    // Fallback title inference based on extracted skills
+    if (!title) {
+      const skillsLower = parsedSkills.map(s => s.toLowerCase());
+      const hasFrontend = skillsLower.some(s => ["react", "vue", "angular", "html", "css", "next.js", "tailwind css"].includes(s));
+      const hasBackend = skillsLower.some(s => ["java", "spring boot", "node.js", "express", "python", "django", "postgresql", "sql", "mongodb"].includes(s));
+      const hasML = skillsLower.some(s => ["machine learning", "deep learning", "pandas", "pytorch", "tensorflow", "data science"].includes(s));
+      const hasCloud = skillsLower.some(s => ["aws", "docker", "kubernetes", "terraform", "ci/cd"].includes(s));
+
+      if (hasFrontend && hasBackend) title = "Full Stack Engineer";
+      else if (hasBackend) title = (experience >= 5) ? "Senior Backend Architect" : "Backend Developer";
+      else if (hasFrontend) title = (experience >= 5) ? "Senior Frontend Engineer" : "Frontend Developer";
+      else if (hasML) title = "Data Scientist";
+      else if (hasCloud) title = "DevOps Engineer";
+      else title = "Software Engineer";
     }
 
     return {
@@ -114,6 +247,8 @@ const AIEngine = {
       location,
       skills: parsedSkills,
       education,
+      email,
+      phone,
       resumeText: text
     };
   },
