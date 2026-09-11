@@ -8,6 +8,9 @@
     "build": "vite build && node -e \"const fs=require('fs'); if(!fs.existsSync('dist')) fs.mkdirSync('dist'); ['data-mock.js','ai-engine.js','app.js','styles.css'].forEach(f=>{if(fs.existsSync(f)) fs.copyFileSync(f,'dist/'+f);}); console.log('✅ All production assets successfully packaged into dist!');\"",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "vite": "^5.0.0"
+  },
   "devDependencies": {
     "vite": "^5.0.0"
   }
