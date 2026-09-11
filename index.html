@@ -121,16 +121,24 @@
             </div>
             
             <!-- Real Notification Dropdown Panel -->
-            <div class="notification-dropdown" id="notificationDropdown" style="display: none; position: absolute; top: 48px; right: 0; width: 340px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden;">
+            <div class="notification-dropdown" id="notificationDropdown" style="display: none; position: absolute; top: 48px; right: 0; width: 360px; background-color: var(--bg-card); border: 1.5px solid var(--border-color); border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 1000; overflow: hidden; animation: fadeIn 0.15s ease-out;">
               <div style="padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-primary);">
-                <span style="font-weight: 700; font-size: 13px;">Notifications</span>
-                <span id="markAllReadBtn" style="font-size: 11px; font-weight: 600; color: var(--primary); cursor: pointer;">Mark all read</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-weight: 800; font-size: 13px; color: var(--text-main);">🔔 Notifications</span>
+                  <span id="notifUnreadPill" style="font-size: 10px; background: var(--primary); color: white; padding: 1px 6px; border-radius: 10px; font-weight: 700;">2 new</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <span id="markAllReadBtn" style="font-size: 11px; font-weight: 700; color: var(--primary); cursor: pointer;">Mark read</span>
+                  <span style="color: var(--border-color);">|</span>
+                  <span id="clearAllNotifsBtn" style="font-size: 11px; font-weight: 700; color: var(--danger); cursor: pointer;">Clear</span>
+                </div>
               </div>
-              <div id="notificationListContainer" style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column;">
+              <div id="notificationListContainer" style="max-height: 340px; overflow-y: auto; display: flex; flex-direction: column;">
                 <!-- Real notification list elements will render here -->
               </div>
-              <div style="padding: 10px; border-top: 1px solid var(--border-color); text-align: center; background-color: var(--bg-primary);">
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">End of alerts feed</span>
+              <div style="padding: 10px 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-primary); font-size: 11px; color: var(--text-muted);">
+                <span>Autonomous Alert Dispatcher Active</span>
+                <span style="color: var(--success); font-weight: 700;">● Live</span>
               </div>
             </div>
           </div>

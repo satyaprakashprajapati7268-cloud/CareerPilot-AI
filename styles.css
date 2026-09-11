@@ -2257,6 +2257,31 @@ footer {
   font-weight: 800;
 }
 
+/* ==========================================================================
+   High-Performance Rendering Optimizations (Snappy & Fast)
+   ========================================================================== */
+*, *::before, *::after {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.job-card, .candidate-card, .application-item, .card-widget, .notification-item {
+  contain: layout style;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.job-grid, .candidates-list, #notificationListContainer {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+button, .tab-item, .nav-item, .role-btn, .avatar, .select-pill {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+
 
 
 

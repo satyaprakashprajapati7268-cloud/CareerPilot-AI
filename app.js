@@ -102,6 +102,8 @@ const els = {
   notificationDropdown: document.getElementById('notificationDropdown'),
   notificationListContainer: document.getElementById('notificationListContainer'),
   markAllReadBtn: document.getElementById('markAllReadBtn'),
+  clearAllNotifsBtn: document.getElementById('clearAllNotifsBtn'),
+  notifUnreadPill: document.getElementById('notifUnreadPill'),
   authForgotPwdBtn: document.getElementById('authForgotPwdBtn'),
   
   // Custom Timeline & Payment Modals
@@ -1151,18 +1153,38 @@ function bindEvents() {
   els.calendarPrevMonthBtn.addEventListener('click', () => changeMonth(-1));
   els.calendarNextMonthBtn.addEventListener('click', () => changeMonth(1));
   
-  // Notification menu
-  els.notificationBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isShown = els.notificationDropdown.style.display === 'block';
-    els.notificationDropdown.style.display = isShown ? 'none' : 'block';
-  });
+  // Notification menu & dropdown handlers
+  if (els.notificationBtn) {
+    els.notificationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isShown = els.notificationDropdown && els.notificationDropdown.style.display === 'block';
+      if (els.notificationDropdown) {
+        els.notificationDropdown.style.display = isShown ? 'none' : 'block';
+        if (!isShown) renderNotifications();
+      }
+      if (els.profileDropdown) els.profileDropdown.style.display = 'none';
+    });
+  }
   
-  els.markAllReadBtn.addEventListener('click', () => {
-    state.notifications.forEach(n => n.unread = false);
-    saveStateToStorage();
-    renderAll();
-  });
+  if (els.markAllReadBtn) {
+    els.markAllReadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.notifications.forEach(n => n.unread = false);
+      saveStateToStorage();
+      renderNotifications();
+      showToast("All notifications marked as read.", "info", 2000);
+    });
+  }
+
+  if (els.clearAllNotifsBtn) {
+    els.clearAllNotifsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.notifications = [];
+      saveStateToStorage();
+      renderNotifications();
+      showToast("Notification inbox cleared.", "info", 2000);
+    });
+  }
   
   document.addEventListener('click', (e) => {
     if (els.notificationDropdown && !els.notificationBtn.contains(e.target) && !els.notificationDropdown.contains(e.target)) {
@@ -3841,7 +3863,11 @@ function renderAll() {
 /* ==========================================
    NOTIFICATION SYSTEM HELPERS
    ========================================== */
+/* ==========================================
+   NOTIFICATION SYSTEM HELPERS
+   ========================================== */
 function renderNotifications() {
+  if (!els.notificationListContainer) return;
   els.notificationListContainer.innerHTML = '';
   
   let unreadCount = 0;
@@ -3850,20 +3876,44 @@ function renderNotifications() {
     
     const item = document.createElement('div');
     item.className = `notification-item ${notif.unread ? 'unread' : ''}`;
+    item.style.cursor = 'pointer';
+    item.style.position = 'relative';
     
+    let actionBadge = '';
+    if (notif.targetTab) {
+      actionBadge = `<span style="font-size: 10px; color: var(--primary); font-weight: 700; background: var(--primary-light); padding: 2px 6px; border-radius: 6px; margin-top: 4px; display: inline-block;">Open →</span>`;
+    }
+
     item.innerHTML = `
-      <div class="notification-item-icon">${notif.icon}</div>
-      <div class="notification-item-content">
-        <div class="notification-item-title">${notif.title}</div>
-        <div class="notification-item-desc">${notif.desc}</div>
-        <div class="notification-item-time">${notif.time}</div>
+      <div class="notification-item-icon" style="font-size: 16px;">${notif.icon || '🔔'}</div>
+      <div class="notification-item-content" style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 4px;">
+          <div class="notification-item-title" style="font-weight: 700; font-size: 12.5px;">${notif.title}</div>
+          ${notif.unread ? '<span style="width: 7px; height: 7px; border-radius: 50%; background: var(--primary); display: inline-block; flex-shrink: 0; margin-top: 4px;"></span>' : ''}
+        </div>
+        <div class="notification-item-desc" style="font-size: 11.5px; line-height: 1.35; margin-top: 2px; color: var(--text-muted);">${notif.desc}</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+          <span class="notification-item-time" style="font-size: 10px; color: var(--text-light);">${notif.time || 'Just now'}</span>
+          ${actionBadge}
+        </div>
       </div>
     `;
     
     item.addEventListener('click', () => {
       notif.unread = false;
       saveStateToStorage();
-      renderAll();
+      renderNotifications();
+      if (els.notificationDropdown) els.notificationDropdown.style.display = 'none';
+
+      if (notif.targetTab) {
+        if (state.currentRole === 'seeker') {
+          showView('seeker');
+          activateTab(notif.targetTab);
+        } else {
+          showView('recruiter');
+          activateTab(notif.targetTab);
+        }
+      }
     });
     
     els.notificationListContainer.appendChild(item);
@@ -3871,37 +3921,53 @@ function renderNotifications() {
   
   if (state.notifications.length === 0) {
     els.notificationListContainer.innerHTML = `
-      <div style="text-align: center; color: var(--text-light); padding: 30px 10px; font-size: 12px;">
-        No active notifications
+      <div style="text-align: center; color: var(--text-light); padding: 36px 16px; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <span style="font-size: 28px;">📭</span>
+        <span style="font-weight: 700; color: var(--text-main);">All caught up!</span>
+        <span>No new notifications at this time.</span>
       </div>
     `;
   }
   
   // Update badge UI
-  if (unreadCount > 0) {
-    els.notificationBadge.style.display = 'flex';
-    els.notificationBadge.textContent = unreadCount;
-  } else {
-    els.notificationBadge.style.display = 'none';
+  if (els.notificationBadge) {
+    if (unreadCount > 0) {
+      els.notificationBadge.style.display = 'flex';
+      els.notificationBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+    } else {
+      els.notificationBadge.style.display = 'none';
+    }
+  }
+
+  // Update dropdown pill
+  if (els.notifUnreadPill) {
+    if (unreadCount > 0) {
+      els.notifUnreadPill.style.display = 'inline-block';
+      els.notifUnreadPill.textContent = `${unreadCount} unread`;
+    } else {
+      els.notifUnreadPill.style.display = 'none';
+    }
   }
 }
 
-function addNotification(title, desc, icon) {
+function addNotification(title, desc, icon, targetTab) {
   const newNotif = {
     id: "notif-" + Date.now(),
     title,
     desc,
     time: "Just now",
     unread: true,
-    icon: icon || "🔔"
+    icon: icon || "🔔",
+    targetTab: targetTab || null
   };
   
   state.notifications.unshift(newNotif);
-  if (state.notifications.length > 15) {
+  if (state.notifications.length > 20) {
     state.notifications.pop();
   }
   
   saveStateToStorage();
+  renderNotifications();
 }
 
 /* ==========================================
