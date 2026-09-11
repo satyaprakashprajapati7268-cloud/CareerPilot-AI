@@ -272,9 +272,51 @@ header {
   background-color: var(--primary-light);
   color: var(--primary);
   font-weight: 700;
+  font-size: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+/* Premium / Pro Golden Circle Badge */
+.avatar.premium-gold {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #ffffff !important;
+  border: 2px solid #fbbf24 !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45), 0 0 12px rgba(245, 158, 11, 0.55) !important;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  animation: goldPulse 3s infinite ease-in-out;
+}
+
+.avatar.premium-gold::after {
+  content: '👑';
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  font-size: 11px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+  line-height: 1;
+}
+
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45), 0 0 10px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.8), 0 0 16px rgba(245, 158, 11, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45), 0 0 10px rgba(245, 158, 11, 0.4);
+  }
+}
+
+.user-profile-menu.premium-gold-border {
+  border-color: rgba(245, 158, 11, 0.6) !important;
+  background: rgba(245, 158, 11, 0.05);
 }
 
 .username {

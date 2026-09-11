@@ -501,6 +501,13 @@ function loadStateFromStorage() {
   const interviewData = localStorage.getItem('sh_interview_records');
   state.interviewRecords = interviewData ? JSON.parse(interviewData) : [];
 
+  const isProSaved = localStorage.getItem('sh_is_pro');
+  state.isPro = isProSaved === 'true';
+  const isRecruiterProSaved = localStorage.getItem('sh_is_recruiter_pro');
+  state.isRecruiterPro = isRecruiterProSaved === 'true';
+  const userPlanSaved = localStorage.getItem('sh_user_plan');
+  state.userPlan = userPlanSaved || (state.isPro ? 'seeker_pro' : (state.isRecruiterPro ? 'recruiter_ent' : 'free'));
+
   saveStateToStorage();
 }
 
@@ -513,6 +520,9 @@ function saveStateToStorage() {
   localStorage.setItem('sh_chats', JSON.stringify(state.chats));
   localStorage.setItem('sh_bookmarked', JSON.stringify(state.bookmarkedJobs));
   localStorage.setItem('sh_interview_records', JSON.stringify(state.interviewRecords));
+  localStorage.setItem('sh_is_pro', state.isPro ? 'true' : 'false');
+  localStorage.setItem('sh_is_recruiter_pro', state.isRecruiterPro ? 'true' : 'false');
+  localStorage.setItem('sh_user_plan', state.userPlan || 'free');
   if (state.currentUser) {
     localStorage.setItem('sh_session', JSON.stringify(state.currentUser));
   } else {
@@ -1792,27 +1802,65 @@ function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 
 }
 
 function updateAuthHeaderUI() {
+  const isPremium = (state.isPro === true || state.userPlan === 'seeker_pro' || state.userPlan === 'recruiter_ent' || localStorage.getItem('sh_is_pro') === 'true' || localStorage.getItem('sh_user_plan') === 'seeker_pro' || localStorage.getItem('sh_user_plan') === 'recruiter_ent');
+
   if (state.currentUser) {
-    if (els.usernameDisplay) els.usernameDisplay.textContent = state.currentUser.name || state.currentUser.email.split('@')[0];
-    if (els.avatarBadge) {
-      els.avatarBadge.textContent = (state.currentUser.name || state.currentUser.email).charAt(0).toUpperCase();
-      if (state.currentUser.role === 'recruiter') {
-        els.avatarBadge.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
-        els.avatarBadge.style.color = "var(--success)";
+    const rawName = state.currentUser.name || state.currentUser.email.split('@')[0];
+    const initial = (state.currentUser.name || state.currentUser.email || 'U').trim().charAt(0).toUpperCase();
+
+    if (els.usernameDisplay) {
+      if (isPremium) {
+        els.usernameDisplay.innerHTML = `${rawName} <span style="font-size:10.5px; font-weight:800; color:#b45309; background:linear-gradient(135deg, #fef3c7, #fde68a); border:1px solid #f59e0b; padding:1px 6px; border-radius:10px; margin-left:4px; letter-spacing:0.3px;">PRO 👑</span>`;
       } else {
-        els.avatarBadge.style.backgroundColor = "rgba(124, 58, 237, 0.15)";
-        els.avatarBadge.style.color = "var(--primary)";
+        els.usernameDisplay.textContent = rawName;
       }
     }
+
+    if (els.avatarBadge) {
+      els.avatarBadge.textContent = initial;
+      if (isPremium) {
+        els.avatarBadge.classList.add('premium-gold');
+        els.avatarBadge.style.backgroundColor = "";
+        els.avatarBadge.style.color = "";
+        els.avatarBadge.style.border = "";
+        els.avatarBadge.style.boxShadow = "";
+      } else {
+        els.avatarBadge.classList.remove('premium-gold');
+        if (state.currentUser.role === 'recruiter') {
+          els.avatarBadge.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+          els.avatarBadge.style.color = "var(--success)";
+          els.avatarBadge.style.border = "1.5px solid var(--success)";
+          els.avatarBadge.style.boxShadow = "none";
+        } else {
+          els.avatarBadge.style.backgroundColor = "rgba(124, 58, 237, 0.15)";
+          els.avatarBadge.style.color = "var(--primary)";
+          els.avatarBadge.style.border = "1.5px solid var(--primary)";
+          els.avatarBadge.style.boxShadow = "none";
+        }
+      }
+    }
+
+    if (els.authMenuBtn) {
+      if (isPremium) {
+        els.authMenuBtn.classList.add('premium-gold-border');
+      } else {
+        els.authMenuBtn.classList.remove('premium-gold-border');
+      }
+    }
+
     if (els.dropdownUserEmail) els.dropdownUserEmail.textContent = state.currentUser.email;
     if (els.seekerWelcomeName) els.seekerWelcomeName.textContent = `Hello, ${state.currentUser.name}!`;
   } else {
     if (els.usernameDisplay) els.usernameDisplay.textContent = "Sign In";
     if (els.avatarBadge) {
       els.avatarBadge.textContent = "U";
+      els.avatarBadge.classList.remove('premium-gold');
       els.avatarBadge.style.backgroundColor = "var(--primary-light)";
       els.avatarBadge.style.color = "var(--primary)";
+      els.avatarBadge.style.border = "1px solid var(--border-color)";
+      els.avatarBadge.style.boxShadow = "none";
     }
+    if (els.authMenuBtn) els.authMenuBtn.classList.remove('premium-gold-border');
     if (els.profileDropdown) els.profileDropdown.style.display = 'none';
   }
 }
@@ -4828,26 +4876,8 @@ function updatePricingUI() {
     }
   }
   
-  // Update Navbar Avatar Badge
-  const avatarBadge = document.getElementById('avatarBadge');
-  if (avatarBadge) {
-    if (currentPlan === 'seeker_pro') {
-      avatarBadge.textContent = '👑 PRO';
-      avatarBadge.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-      avatarBadge.style.color = '#fff';
-      avatarBadge.style.display = 'inline-block';
-    } else if (currentPlan === 'recruiter_ent') {
-      avatarBadge.textContent = '🚀 ENTERPRISE';
-      avatarBadge.style.background = 'linear-gradient(135deg, #7c3aed, #4f46e5)';
-      avatarBadge.style.color = '#fff';
-      avatarBadge.style.display = 'inline-block';
-    } else {
-      avatarBadge.textContent = 'FREE';
-      avatarBadge.style.background = 'var(--bg-primary)';
-      avatarBadge.style.color = 'var(--text-muted)';
-      avatarBadge.style.display = 'inline-block';
-    }
-  }
+  // Update Navbar Avatar Badge & Golden Circle Status
+  updateAuthHeaderUI();
 }
 
 function initCheckoutAndBillingModal() {
