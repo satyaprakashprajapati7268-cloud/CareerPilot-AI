@@ -1367,20 +1367,27 @@
           </div>
 
           <!-- Custom Google Account Input Form (Initially Hidden) -->
-          <form id="googleCustomAccountForm" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px; padding: 14px; background: var(--bg-primary); border-radius: 10px; border: 1px solid var(--border-color);">
-            <div class="form-group">
-              <label style="font-size: 11px; font-weight: 700;">Real Full Name</label>
+          <form id="googleCustomAccountForm" style="display: none; flex-direction: column; gap: 10px; margin-top: 6px; padding: 14px; background: var(--bg-card); border-radius: 10px; border: 1.5px solid var(--primary);">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Your Real Full Name</label>
               <input type="text" id="googleCustomNameInput" placeholder="e.g. Satyaprakash Prajapati" required style="font-size: 13px; padding: 8px 12px;">
             </div>
-            <div class="form-group">
-              <label style="font-size: 11px; font-weight: 700;">Real Gmail / Google Email</label>
-              <input type="email" id="googleCustomEmailInput" placeholder="e.g. yourname@gmail.com" required style="font-size: 13px; padding: 8px 12px;">
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Google / Gmail Address</label>
+              <input type="email" id="googleCustomEmailInput" placeholder="e.g. satyaprakash@gmail.com" required style="font-size: 13px; padding: 8px 12px;">
             </div>
-            <button type="submit" class="btn-primary" style="padding: 10px; font-weight: 700; width: 100%;">Connect with this Google Account</button>
+            <div class="form-group" style="margin: 0;">
+              <label style="font-size: 11px; font-weight: 700;">Account Persona</label>
+              <select id="googleCustomRoleSelect" style="font-size: 12px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card);">
+                <option value="seeker" selected>Job Seeker (Candidate)</option>
+                <option value="recruiter">Recruiter / Employer</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="padding: 10px; font-weight: 700; width: 100%; margin-top: 4px; background: linear-gradient(135deg, var(--primary), #4f46e5);">Sign in with this Google Account 🚀</button>
           </form>
 
-          <div style="font-size: 11px; color: var(--text-light); text-align: center; margin-top: 12px; line-height: 1.4;">
-            To continue, Google will share your name, email address, and profile details with SmartHire.
+          <div style="font-size: 11px; color: var(--text-light); text-align: center; margin-top: 10px; line-height: 1.4;">
+            To continue, Google will share your name, email address, and profile details with CareerPilot.
           </div>
         </div>
       </div>

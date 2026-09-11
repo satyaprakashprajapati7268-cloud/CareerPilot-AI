@@ -614,6 +614,9 @@ function bindEvents() {
       if (els.googleCustomAccountForm) {
         const isHidden = els.googleCustomAccountForm.style.display === 'none';
         els.googleCustomAccountForm.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden && els.googleCustomNameInput) {
+          setTimeout(() => els.googleCustomNameInput.focus(), 50);
+        }
       }
     });
   }
@@ -622,11 +625,14 @@ function bindEvents() {
       e.preventDefault();
       const customName = (els.googleCustomNameInput?.value || '').trim() || "Google User";
       const customEmail = (els.googleCustomEmailInput?.value || '').trim();
+      const roleSelect = document.getElementById('googleCustomRoleSelect');
+      const customRole = roleSelect ? roleSelect.value : ((customEmail.toLowerCase().includes('admin') || customEmail.toLowerCase().includes('recruiter')) ? 'recruiter' : 'seeker');
+
       if (!customEmail) return;
       authenticateUserWithDetails({
         email: customEmail,
         name: customName,
-        role: (customEmail.toLowerCase().includes('admin') || customEmail.toLowerCase().includes('recruiter')) ? 'recruiter' : 'seeker',
+        role: customRole,
         provider: "Google"
       });
       if (els.googleAccountChooserModal) els.googleAccountChooserModal.classList.remove('active');
