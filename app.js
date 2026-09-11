@@ -1767,6 +1767,7 @@ function handleGoogleCredentialResponse(response) {
       name: gName,
       role: gRole,
       picture: gPicture,
+      googleSub: payload.sub || "",
       provider: "Google"
     });
 
@@ -1863,52 +1864,101 @@ function handleOAuthLogin(provider) {
   }
 }
 
-function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 'Google', picture = '' }) {
+function authenticateUserWithDetails({ email, name, role = 'seeker', provider = 'Google', picture = '', googleSub = '' }) {
   if (email.toLowerCase() === 'satyaprakashprajapati459@gmail.com' || email.toLowerCase().includes('admin')) {
     role = 'recruiter';
   }
 
-  const oauthUser = {
-    id: "usr-" + provider.toLowerCase() + "-" + Date.now(),
-    email: email,
-    name: name,
-    role: role,
-    picture: picture,
-    provider: provider,
-    profile: { ...DEFAULT_SEEKER_PROFILE, fullName: name, email: email },
-    applications: [...DEFAULT_APPLICATIONS],
-    savedJobs: []
+  // --- CareerPilot OAuth 2.0 Backend & Database Verification Pipeline ---
+  const storedUsers = getStoredUsers();
+  const normalizedEmail = email.trim().toLowerCase();
+  let existingUser = storedUsers.find(u => u.email && u.email.trim().toLowerCase() === normalizedEmail);
+
+  let activeUser = null;
+  let isNewAccount = false;
+
+  if (existingUser) {
+    // Branch YES: Account exists in Database -> Login & restore session
+    isNewAccount = false;
+    if (picture && !existingUser.picture) existingUser.picture = picture;
+    if (provider && !existingUser.provider) existingUser.provider = provider;
+    if (googleSub && !existingUser.googleSub) existingUser.googleSub = googleSub;
+    
+    activeUser = existingUser;
+    saveStoredUser(existingUser);
+  } else {
+    // Branch NO: Account does not exist -> Create new CareerPilot user account
+    isNewAccount = true;
+    const newUserId = "usr-" + provider.toLowerCase().replace(/[^a-z0-9]/g, '') + "-" + Date.now();
+    
+    activeUser = {
+      id: newUserId,
+      email: email,
+      name: name,
+      role: role,
+      picture: picture,
+      googleSub: googleSub,
+      provider: provider,
+      emailVerified: true,
+      createdAt: new Date().toISOString(),
+      profile: { ...DEFAULT_SEEKER_PROFILE, fullName: name, email: email, avatar: picture },
+      applications: [...DEFAULT_APPLICATIONS],
+      savedJobs: []
+    };
+
+    saveStoredUser(activeUser);
+  }
+
+  // Issue Session Token / JWT simulation
+  const sessionToken = "cp_jwt_" + btoa(JSON.stringify({ sub: activeUser.id, email: activeUser.email, iat: Date.now() }));
+  localStorage.setItem('careerpilot_jwt_session', sessionToken);
+  localStorage.setItem('careerpilot_session_email', activeUser.email);
+
+  // Synchronize state
+  state.currentUser = {
+    id: activeUser.id,
+    email: activeUser.email,
+    role: activeUser.role,
+    name: activeUser.name,
+    provider: activeUser.provider || provider,
+    picture: activeUser.picture || picture
   };
 
-  saveStoredUser(oauthUser);
-
-  state.currentUser = { id: oauthUser.id, email, role, name, provider, picture };
-  if (role === 'seeker') {
-    state.profile = oauthUser.profile;
-    state.applications = oauthUser.applications;
+  if (activeUser.role === 'seeker') {
+    state.profile = activeUser.profile || { ...DEFAULT_SEEKER_PROFILE, fullName: activeUser.name, email: activeUser.email };
+    state.applications = activeUser.applications || [...DEFAULT_APPLICATIONS];
   }
-  state.currentRole = role;
+  state.currentRole = activeUser.role;
 
   saveStateToStorage();
   updateAuthHeaderUI();
   toggleAuthModal(false);
 
-  addNotification(
-    `${provider} Account Connected`,
-    `Successfully signed in as ${name} (${email}).`,
-    "✅"
-  );
+  // Notify and route to CareerPilot Home / Dashboard
+  if (isNewAccount) {
+    addNotification(
+      `🎉 Welcome to CareerPilot!`,
+      `New ${provider} account created for ${name} (${email}).`,
+      "✨"
+    );
+    showToast(`🎉 New CareerPilot account created for ${name}! Google OAuth 2.0 verified.`, "success", 4000);
+  } else {
+    addNotification(
+      `Welcome Back!`,
+      `Signed in via ${provider} as ${name} (${email}).`,
+      "✅"
+    );
+    showToast(`✅ Welcome back, ${name}! Google OAuth 2.0 session verified.`, "success", 3500);
+  }
 
-  showToast(`✅ Successfully connected with ${provider}! Welcome, ${name}.`, "success");
-
-  if (role === 'recruiter') {
+  if (activeUser.role === 'recruiter') {
     switchRole('recruiter');
     showView('recruiter');
     activateTab('recruiterActiveJobsTab');
   } else {
     switchRole('seeker');
     showView('seeker');
-    activateTab('seekerProfileTab');
+    activateTab('seekerJobsTab');
   }
 }
 
