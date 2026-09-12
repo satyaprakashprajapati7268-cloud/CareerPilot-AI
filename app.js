@@ -5280,20 +5280,20 @@ function openCheckoutModal(planType = 'seeker_pro') {
   if (planType === 'seeker_pro') {
     activeCheckoutPlan = {
       id: 'seeker_pro',
-      name: 'Job Seeker Pro',
-      priceUsd: '$19',
-      priceInr: '₹1,499',
-      amount: 19,
+      name: 'Job Seeker Pro 👑',
+      priceUsd: '₹199',
+      priceInr: '₹199',
+      amount: 199,
       period: 'month',
-      features: 'Unlimited Auto-Apply, AI Mock Interviews & 14-Day Roadmap'
+      features: 'Unlimited Auto-Apply, AI Mock Interviews, 14-Day Roadmap & Golden Circle'
     };
   } else if (planType === 'recruiter_ent') {
     activeCheckoutPlan = {
       id: 'recruiter_ent',
       name: 'Enterprise Recruiter',
-      priceUsd: '$99',
-      priceInr: '₹7,999',
-      amount: 99,
+      priceUsd: '₹499',
+      priceInr: '₹499',
+      amount: 499,
       period: 'month',
       features: 'Post Unlimited Jobs, Candidate Deep-Dive & Direct Chat'
     };
@@ -5305,7 +5305,7 @@ function openCheckoutModal(planType = 'seeker_pro') {
   
   if (planNameEl) planNameEl.textContent = `${activeCheckoutPlan.name} (${activeCheckoutPlan.priceUsd}/${activeCheckoutPlan.period})`;
   if (planPriceEl) planPriceEl.textContent = activeCheckoutPlan.priceUsd;
-  if (execBtn) execBtn.innerHTML = `<span>⚡ Pay ${activeCheckoutPlan.priceUsd} (${activeCheckoutPlan.priceInr}) & Activate Instantly</span>`;
+  if (execBtn) execBtn.innerHTML = `<span>⚡ Pay ${activeCheckoutPlan.priceUsd} & Activate Instantly</span>`;
   
   overlay.classList.add('active');
 }
@@ -5324,14 +5324,14 @@ function updatePricingUI() {
   
   if (btnFree) {
     if (currentPlan === 'free') {
-      btnFree.textContent = '✓ Current Active Plan ($0)';
+      btnFree.textContent = '✓ Current Active Plan (₹0)';
       btnFree.className = 'btn-secondary';
       btnFree.style.background = 'var(--success-light)';
       btnFree.style.color = 'var(--success)';
       btnFree.style.borderColor = 'var(--success)';
       btnFree.style.fontWeight = '800';
     } else {
-      btnFree.textContent = 'Switch to Free Basic ($0)';
+      btnFree.textContent = 'Switch to Free Basic (₹0)';
       btnFree.className = 'btn-secondary';
       btnFree.style.background = '';
       btnFree.style.color = '';
@@ -5341,12 +5341,12 @@ function updatePricingUI() {
   
   if (btnPro) {
     if (currentPlan === 'seeker_pro') {
-      btnPro.textContent = '✓ Active Plan (Pro $19/mo)';
+      btnPro.textContent = '✓ Active Plan (Pro ₹199/mo)';
       btnPro.className = 'btn-primary';
       btnPro.style.background = 'linear-gradient(135deg, #10b981, #059669)';
       btnPro.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.4)';
     } else {
-      btnPro.textContent = 'Upgrade to Pro ($19/mo)';
+      btnPro.textContent = 'Upgrade to Pro (₹199/mo)';
       btnPro.className = 'btn-primary';
       btnPro.style.background = '';
       btnPro.style.boxShadow = '';
@@ -5355,12 +5355,12 @@ function updatePricingUI() {
   
   if (btnRecruiter) {
     if (currentPlan === 'recruiter_ent') {
-      btnRecruiter.textContent = '✓ Active Plan (Enterprise $99/mo)';
+      btnRecruiter.textContent = '✓ Active Plan (Enterprise ₹499/mo)';
       btnRecruiter.className = 'btn-primary';
       btnRecruiter.style.background = 'linear-gradient(135deg, #10b981, #059669)';
       btnRecruiter.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.4)';
     } else {
-      btnRecruiter.textContent = 'Buy Recruiter Plan ($99/mo)';
+      btnRecruiter.textContent = 'Buy Recruiter Plan (₹499/mo)';
       btnRecruiter.className = 'btn-primary';
       btnRecruiter.style.background = '';
       btnRecruiter.style.boxShadow = '';
@@ -5430,14 +5430,14 @@ function initCheckoutAndBillingModal() {
     execBtn.addEventListener('click', () => {
       const plan = activeCheckoutPlan;
       execBtn.disabled = true;
-      execBtn.innerHTML = `<span>⏳ Processing ${plan.priceUsd} (${plan.priceInr}) Transaction...</span>`;
+      execBtn.innerHTML = `<span>⏳ Processing ${plan.priceUsd} Transaction...</span>`;
       
       setTimeout(() => {
         execBtn.disabled = false;
         execBtn.innerHTML = `<span>⚡ Pay ${plan.priceUsd} & Activate Instantly</span>`;
         closeCheckoutModal();
         
-        const txnId = '#TXN-CP-' + (plan.id === 'recruiter_ent' ? '99-' : '19-') + Math.floor(100000 + Math.random() * 900000);
+        const txnId = '#TXN-CP-' + (plan.id === 'recruiter_ent' ? '499-' : '199-') + Math.floor(100000 + Math.random() * 900000);
         
         if (plan.id === 'seeker_pro') {
           state.isPro = true;
@@ -5448,8 +5448,8 @@ function initCheckoutAndBillingModal() {
           
           addNotification(
             `Pro Subscription Activated (${plan.priceUsd})! 🎉`,
-            `Payment of ${plan.priceUsd} (${plan.priceInr}) successful. Unlimited AI Mock Interviews & 14-Day Roadmap are now unlocked! (Txn: ${txnId})`,
-            "💎"
+            `Payment of ${plan.priceUsd}/mo successful. Unlimited AI Mock Interviews, Auto-Apply & 14-Day Roadmap unlocked! (Txn: ${txnId})`,
+            "👑"
           );
         } else if (plan.id === 'recruiter_ent') {
           state.isRecruiterPro = true;
@@ -5459,7 +5459,7 @@ function initCheckoutAndBillingModal() {
           
           addNotification(
             `Enterprise Recruiter Activated (${plan.priceUsd})! 🚀`,
-            `Payment of ${plan.priceUsd} (${plan.priceInr}) successful. Unlimited Job Postings & Candidate Deep-Dives unlocked! (Txn: ${txnId})`,
+            `Payment of ${plan.priceUsd}/mo successful. Unlimited Job Postings & Candidate Deep-Dives unlocked! (Txn: ${txnId})`,
             "🚀"
           );
         }
@@ -5477,7 +5477,7 @@ function initCheckoutAndBillingModal() {
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; text-align:left; margin-bottom:20px; font-size:12px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
               <span style="color:#64748b;">Amount Deducted:</span>
-              <strong style="color:#0f172a; font-size:14px;">${plan.priceUsd} (${plan.priceInr})</strong>
+              <strong style="color:#0f172a; font-size:14px;">${plan.priceUsd}/month</strong>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
               <span style="color:#64748b;">Transaction ID:</span>
