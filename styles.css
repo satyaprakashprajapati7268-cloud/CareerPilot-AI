@@ -2122,15 +2122,32 @@ footer {
 }
 
 .select-pill {
-  transition: var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background-color: var(--bg-card);
   color: var(--text-muted);
+  border: 1.5px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.select-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .select-pill.active {
-  background-color: var(--primary-light);
-  color: var(--primary);
+  background-color: var(--primary-light) !important;
+  color: var(--primary) !important;
   border-color: var(--primary) !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
 }
 
 .dropdown-item-btn:hover {

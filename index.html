@@ -499,22 +499,22 @@
       
       <!-- 3. Kanban & Grid Pipeline Tab -->
       <div class="tab-content" id="seekerPipelineTab">
-        <!-- Top Switcher & Stats (JOBinex Style) -->
+        <!-- Top Switcher & Filter Pills Bar -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
           <!-- Left: View Toggle Switchers -->
           <div style="display: flex; gap: 8px;">
-            <button class="role-btn active" id="toggleViewKanbanBtn" style="font-size: 12px; padding: 6px 12px;">📊 Kanban Board</button>
-            <button class="role-btn" id="toggleViewGridBtn" style="font-size: 12px; padding: 6px 12px;">📋 Grid Card List</button>
+            <button class="role-btn active" id="toggleViewKanbanBtn" style="font-size: 12px; padding: 7px 14px; font-weight: 700;">📊 Kanban Board</button>
+            <button class="role-btn" id="toggleViewGridBtn" style="font-size: 12px; padding: 7px 14px; font-weight: 700;">📋 Grid Card List</button>
           </div>
           
-          <!-- Right: Grid View Filter Pills -->
-          <div id="gridFilterPills" style="display: none; gap: 6px; flex-wrap: wrap;">
-            <span class="badge select-pill active" data-filter="all" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">All Applications</span>
-            <span class="badge select-pill" data-filter="applied" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Applied</span>
-            <span class="badge select-pill" data-filter="review" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Screening</span>
-            <span class="badge select-pill" data-filter="interview" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Interviewing</span>
-            <span class="badge select-pill" data-filter="offer" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Offers</span>
-            <span class="badge select-pill" data-filter="rejected" style="cursor: pointer; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 12px; font-size: 11px;">Rejected</span>
+          <!-- Right: Interactive Filter Pills (Always Accessible) -->
+          <div id="gridFilterPills" style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <span class="select-pill active" data-filter="all" id="pillFilterAll">All Applications <span id="cntPillAll" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(3)</span></span>
+            <span class="select-pill" data-filter="applied" id="pillFilterApplied">Applied <span id="cntPillApplied" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(1)</span></span>
+            <span class="select-pill" data-filter="review" id="pillFilterReview">Screening <span id="cntPillReview" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(1)</span></span>
+            <span class="select-pill" data-filter="interview" id="pillFilterInterview">Interviewing <span id="cntPillInterview" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(1)</span></span>
+            <span class="select-pill" data-filter="offer" id="pillFilterOffer">Offers <span id="cntPillOffer" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(0)</span></span>
+            <span class="select-pill" data-filter="rejected" id="pillFilterRejected">Rejected <span id="cntPillRejected" style="font-size: 10px; font-weight: 800; opacity: 0.85;">(0)</span></span>
           </div>
         </div>
         

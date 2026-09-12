@@ -923,14 +923,16 @@ function bindEvents() {
     renderAll();
   });
 
-  // Filter pills events inside Grid mode (JOBinex Style)
+  // Interactive Application Filter Pills (All, Applied, Screening, Interviewing, Offers, Rejected)
   document.querySelectorAll('#gridFilterPills .select-pill').forEach(pill => {
-    pill.addEventListener('click', (e) => {
-      document.querySelectorAll('#gridFilterPills .select-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      state.applicationsGridFilter = pill.getAttribute('data-filter');
+    pill.addEventListener('click', () => {
+      const filter = pill.getAttribute('data-filter') || 'all';
+      state.applicationsGridFilter = filter;
       saveStateToStorage();
-      renderAll();
+      renderKanbanBoard();
+      
+      const filterLabel = pill.textContent.trim().split('(')[0].trim();
+      showToast(`Showing: ${filterLabel}`, 'info', 1800);
     });
   });
 
@@ -2735,15 +2737,18 @@ function renderKanbanBoard() {
   if (state.applicationsViewMode === 'kanban') {
     els.toggleViewKanbanBtn.classList.add('active');
     els.toggleViewGridBtn.classList.remove('active');
-    els.gridFilterPills.style.display = 'none';
     els.applicationsKanbanBoard.style.display = 'flex';
     els.applicationsGridList.style.display = 'none';
   } else {
     els.toggleViewKanbanBtn.classList.remove('active');
     els.toggleViewGridBtn.classList.add('active');
-    els.gridFilterPills.style.display = 'flex';
     els.applicationsKanbanBoard.style.display = 'none';
     els.applicationsGridList.style.display = 'grid';
+  }
+
+  // Ensure filter pills are always visible
+  if (els.gridFilterPills) {
+    els.gridFilterPills.style.display = 'flex';
   }
   
   state.applications.forEach(app => {
@@ -2838,6 +2843,67 @@ function renderKanbanBoard() {
       });
       
       els.applicationsGridList.appendChild(gridCard);
+    }
+  });
+
+  // Empty state for Grid View if filtered list has 0 results
+  if (els.applicationsGridList.children.length === 0) {
+    els.applicationsGridList.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: var(--bg-card); border-radius: 12px; border: 1.5px dashed var(--border-color);">
+        <div style="font-size: 32px; margin-bottom: 8px;">📂</div>
+        <h4 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">No applications in "${state.applicationsGridFilter.toUpperCase()}" stage</h4>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Try selecting "All Applications" to view your complete tracking history.</p>
+      </div>
+    `;
+  }
+
+  // Update live counts on filter pills
+  const totalApps = state.applications.length;
+  const pillAll = document.getElementById('cntPillAll');
+  if (pillAll) pillAll.textContent = `(${totalApps})`;
+  const pillApplied = document.getElementById('cntPillApplied');
+  if (pillApplied) pillApplied.textContent = `(${cntApplied})`;
+  const pillReview = document.getElementById('cntPillReview');
+  if (pillReview) pillReview.textContent = `(${cntReview})`;
+  const pillInterview = document.getElementById('cntPillInterview');
+  if (pillInterview) pillInterview.textContent = `(${cntInterview})`;
+  const pillOffer = document.getElementById('cntPillOffer');
+  if (pillOffer) pillOffer.textContent = `(${cntOffer})`;
+  const pillRejected = document.getElementById('cntPillRejected');
+  if (pillRejected) pillRejected.textContent = `(${cntRejected})`;
+
+  // Update active status on pills
+  document.querySelectorAll('#gridFilterPills .select-pill').forEach(pill => {
+    if (pill.getAttribute('data-filter') === state.applicationsGridFilter) {
+      pill.classList.add('active');
+    } else {
+      pill.classList.remove('active');
+    }
+  });
+
+  // Highlight active Kanban column if filter selected
+  const kanbanCols = {
+    'applied': els.kanbanColApplied?.closest('.kanban-col'),
+    'review': els.kanbanColReview?.closest('.kanban-col'),
+    'interview': els.kanbanColInterview?.closest('.kanban-col'),
+    'offer': els.kanbanColOffer?.closest('.kanban-col')
+  };
+
+  Object.entries(kanbanCols).forEach(([key, colEl]) => {
+    if (!colEl) return;
+    if (state.applicationsGridFilter === 'all' || state.applicationsGridFilter === key) {
+      colEl.style.opacity = '1';
+      colEl.style.transform = state.applicationsGridFilter === key ? 'scale(1.02)' : 'none';
+      colEl.style.transition = 'all 0.25s ease';
+      if (state.applicationsGridFilter === key) {
+        colEl.style.boxShadow = '0 6px 20px rgba(124, 58, 237, 0.15)';
+      } else {
+        colEl.style.boxShadow = 'none';
+      }
+    } else {
+      colEl.style.opacity = '0.45';
+      colEl.style.transform = 'none';
+      colEl.style.boxShadow = 'none';
     }
   });
   
